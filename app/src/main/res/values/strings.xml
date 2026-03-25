@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">ChatyInput</string>
+
+    <!-- Tab labels -->
+    <string name="tab_voice">Voice</string>
+    <string name="tab_history">History</string>
+    <string name="tab_dictionary">Dictionary</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Voice screen -->
+    <string name="text_buffer">Text Buffer</string>
+    <string name="btn_record">Record</string>
+    <string name="btn_hold_to_record">Hold to Record</string>
+    <string name="recording_tap_to_stop">Recording... (tap to stop)</string>
+    <string name="recording_release_to_stop">Recording... (release to stop)</string>
+    <string name="btn_stop_recording">Stop Recording</string>
+    <string name="processing">Processing...</string>
+    <string name="btn_clear">Clear</string>
+    <string name="btn_copy">Copy</string>
+    <string name="error_no_audio">No audio recorded</string>
+    <string name="error_recording_failed">Failed to start recording</string>
+    <string name="error_mic_permission">Microphone permission is required</string>
+    <string name="error_configure_api">Please configure API keys in Settings</string>
+    <string name="last_segment">Last segment: %s</string>
+    <string name="last_action">Last action: %s</string>
+
+    <!-- Settings screen -->
+    <string name="settings_stt_provider">STT Provider</string>
+    <string name="settings_llm_provider">LLM Provider</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_recording">Recording</string>
+    <string name="settings_hold_to_record">Hold to Record</string>
+    <string name="settings_hold_desc">Press and hold mic to record, release to stop</string>
+    <string name="settings_tap_desc">Tap to start, tap again to stop</string>
+    <string name="settings_system_prompt">System Prompt</string>
+    <string name="settings_reset_default">Reset to Default</string>
+    <string name="btn_save">Save</string>
+    <string name="settings_saved">Settings saved.</string>
+    <string name="settings_history">History</string>
+    <string name="settings_retention">Retention Period</string>
+    <string name="settings_clear_all">Clear All History</string>
+    <string name="settings_clear_confirm_title">Clear All History</string>
+    <string name="settings_clear_confirm_msg">This will delete all voice input history and saved audio files. This action cannot be undone.</string>
+    <string name="settings_are_you_sure">Are you sure?</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="settings_history_cleared">History cleared.</string>
+    <string name="retention_days">%dd</string>
+
+    <!-- Dictionary screen -->
+    <string name="dict_title">Custom Dictionary</string>
+    <string name="dict_description">Add words that are often misrecognized by voice input. The AI will prioritize these when it hears similar sounds.</string>
+    <string name="dict_new_word">New word</string>
+    <string name="dict_empty">No custom words yet</string>
+    <string name="dict_word_count">%d words</string>
+
+    <!-- History screen -->
+    <string name="history_empty">No history yet</string>
+    <string name="history_subtitle">Voice input history (%d day retention)</string>
+    <string name="history_explanation">Explanation: %s</string>
+    <string name="intent_content">Content</string>
+    <string name="intent_edit">Edit</string>
+    <string name="intent_send">Send</string>
+    <string name="time_just_now">Just now</string>
+    <string name="time_minutes_ago">%dm ago</string>
+    <string name="time_hours_ago">%dh ago</string>
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_days_ago">%dd ago</string>
+    <string name="btn_play_audio">Play Audio</string>
+    <string name="btn_playing">Playing...</string>
+    <string name="btn_delete">Delete</string>
+
+    <!-- Edit button -->
+    <string name="edit_button_label">Edit</string>
+    <string name="settings_edit_prompt">Edit Command Prompt</string>
+    <string name="settings_edit_prompt_desc">Prompt used for the edit command button</string>
+    <string name="ime_edit">EDIT</string>
+
+    <!-- IME keyboard -->
+    <string name="ime_placeholder">Tap mic to record...</string>
+    <string name="ime_rec">REC</string>
+    <string name="ime_stop">STOP</string>
+    <string name="ime_send">Send &#x21B5;</string>
+    <string name="ime_clear">Clear</string>
+    <string name="ime_mic_permission">Mic permission needed. Open ChatyInput app first to grant permission.</string>
+    <string name="ime_recording_failed">Recording failed: %s</string>
+    <string name="ime_no_audio">No audio recorded</string>
+    <string name="ime_configure_api">Configure API keys in ChatyInput app</string>
+</resources>

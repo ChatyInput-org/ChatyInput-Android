@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">ChatyInput</string>
+
+    <!-- Tab labels -->
+    <string name="tab_voice">语音</string>
+    <string name="tab_history">历史</string>
+    <string name="tab_dictionary">词典</string>
+    <string name="tab_settings">设置</string>
+
+    <!-- Voice screen -->
+    <string name="text_buffer">文本缓冲区</string>
+    <string name="btn_record">录音</string>
+    <string name="btn_hold_to_record">按住录音</string>
+    <string name="recording_tap_to_stop">录音中…（点击停止）</string>
+    <string name="recording_release_to_stop">录音中…（松开停止）</string>
+    <string name="btn_stop_recording">停止录音</string>
+    <string name="processing">处理中…</string>
+    <string name="btn_clear">清空</string>
+    <string name="btn_copy">复制</string>
+    <string name="error_no_audio">未录到音频</string>
+    <string name="error_recording_failed">录音启动失败</string>
+    <string name="error_mic_permission">需要麦克风权限</string>
+    <string name="error_configure_api">请在设置中配置 API 密钥</string>
+    <string name="last_segment">最近片段：%s</string>
+    <string name="last_action">最近操作：%s</string>
+
+    <!-- Settings screen -->
+    <string name="settings_stt_provider">语音识别</string>
+    <string name="settings_llm_provider">语言模型</string>
+    <string name="settings_language">语言</string>
+    <string name="settings_recording">录音</string>
+    <string name="settings_hold_to_record">按住录音</string>
+    <string name="settings_hold_desc">按住麦克风录音，松开停止</string>
+    <string name="settings_tap_desc">点击开始，再次点击停止</string>
+    <string name="settings_system_prompt">系统提示词</string>
+    <string name="settings_reset_default">恢复默认</string>
+    <string name="btn_save">保存</string>
+    <string name="settings_saved">设置已保存。</string>
+    <string name="settings_history">历史记录</string>
+    <string name="settings_retention">保留时间</string>
+    <string name="settings_clear_all">清空所有历史</string>
+    <string name="settings_clear_confirm_title">清空所有历史</string>
+    <string name="settings_clear_confirm_msg">将删除所有语音输入历史和音频文件，此操作不可撤销。</string>
+    <string name="settings_are_you_sure">确定要清空吗？</string>
+    <string name="btn_cancel">取消</string>
+    <string name="settings_history_cleared">历史已清空。</string>
+    <string name="retention_days">%d天</string>
+
+    <!-- Dictionary screen -->
+    <string name="dict_title">常用词</string>
+    <string name="dict_description">添加语音输入中经常识别错误的词。AI 听到类似发音时会优先使用这些词。</string>
+    <string name="dict_new_word">新词</string>
+    <string name="dict_empty">暂无常用词</string>
+    <string name="dict_word_count">%d 个词</string>
+
+    <!-- History screen -->
+    <string name="history_empty">暂无历史记录</string>
+    <string name="history_subtitle">语音输入历史（保留 %d 天）</string>
+    <string name="history_explanation">说明：%s</string>
+    <string name="intent_content">内容</string>
+    <string name="intent_edit">编辑</string>
+    <string name="intent_send">发送</string>
+    <string name="time_just_now">刚刚</string>
+    <string name="time_minutes_ago">%d分钟前</string>
+    <string name="time_hours_ago">%d小时前</string>
+    <string name="time_yesterday">昨天</string>
+    <string name="time_days_ago">%d天前</string>
+    <string name="btn_play_audio">播放音频</string>
+    <string name="btn_playing">播放中…</string>
+    <string name="btn_delete">删除</string>
+
+    <!-- Edit button -->
+    <string name="edit_button_label">编辑</string>
+    <string name="settings_edit_prompt">编辑指令提示词</string>
+    <string name="settings_edit_prompt_desc">编辑按钮使用的提示词</string>
+    <string name="ime_edit">编辑</string>
+
+    <!-- IME keyboard -->
+    <string name="ime_placeholder">点击麦克风开始录音…</string>
+    <string name="ime_rec">录音</string>
+    <string name="ime_stop">停止</string>
+    <string name="ime_send">发送 ↵</string>
+    <string name="ime_clear">清空</string>
+    <string name="ime_mic_permission">需要麦克风权限，请先打开 ChatyInput 应用授权。</string>
+    <string name="ime_recording_failed">录音失败：%s</string>
+    <string name="ime_no_audio">未录到音频</string>
+    <string name="ime_configure_api">请在 ChatyInput 应用中配置 API 密钥</string>
+</resources>

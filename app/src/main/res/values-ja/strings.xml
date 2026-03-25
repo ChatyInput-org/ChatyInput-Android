@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">ChatyInput</string>
+
+    <!-- Tab labels -->
+    <string name="tab_voice">音声</string>
+    <string name="tab_history">履歴</string>
+    <string name="tab_dictionary">辞書</string>
+    <string name="tab_settings">設定</string>
+
+    <!-- Voice screen -->
+    <string name="text_buffer">テキストバッファ</string>
+    <string name="btn_record">録音</string>
+    <string name="btn_hold_to_record">長押しで録音</string>
+    <string name="recording_tap_to_stop">録音中…（タップで停止）</string>
+    <string name="recording_release_to_stop">録音中…（離すと停止）</string>
+    <string name="btn_stop_recording">録音停止</string>
+    <string name="processing">処理中…</string>
+    <string name="btn_clear">クリア</string>
+    <string name="btn_copy">コピー</string>
+    <string name="error_no_audio">音声が録音されていません</string>
+    <string name="error_recording_failed">録音の開始に失敗しました</string>
+    <string name="error_mic_permission">マイクの権限が必要です</string>
+    <string name="error_configure_api">設定でAPIキーを設定してください</string>
+    <string name="last_segment">最近のセグメント：%s</string>
+    <string name="last_action">最近の操作：%s</string>
+
+    <!-- Settings screen -->
+    <string name="settings_stt_provider">音声認識</string>
+    <string name="settings_llm_provider">言語モデル</string>
+    <string name="settings_language">言語</string>
+    <string name="settings_recording">録音</string>
+    <string name="settings_hold_to_record">長押しで録音</string>
+    <string name="settings_hold_desc">マイクを長押しで録音、離すと停止</string>
+    <string name="settings_tap_desc">タップで開始、もう一度タップで停止</string>
+    <string name="settings_system_prompt">システムプロンプト</string>
+    <string name="settings_reset_default">デフォルトに戻す</string>
+    <string name="btn_save">保存</string>
+    <string name="settings_saved">設定を保存しました。</string>
+    <string name="settings_history">履歴</string>
+    <string name="settings_retention">保持期間</string>
+    <string name="settings_clear_all">すべての履歴を削除</string>
+    <string name="settings_clear_confirm_title">すべての履歴を削除</string>
+    <string name="settings_clear_confirm_msg">すべての音声入力履歴と保存された音声ファイルが削除されます。この操作は取り消せません。</string>
+    <string name="settings_are_you_sure">本当に削除しますか？</string>
+    <string name="btn_cancel">キャンセル</string>
+    <string name="settings_history_cleared">履歴を削除しました。</string>
+    <string name="retention_days">%d日</string>
+
+    <!-- Dictionary screen -->
+    <string name="dict_title">カスタム辞書</string>
+    <string name="dict_description">音声入力で誤認識されやすい単語を追加してください。AIは似た発音を聞いた時にこれらの単語を優先します。</string>
+    <string name="dict_new_word">新しい単語</string>
+    <string name="dict_empty">カスタム単語はまだありません</string>
+    <string name="dict_word_count">%d 語</string>
+
+    <!-- History screen -->
+    <string name="history_empty">履歴はまだありません</string>
+    <string name="history_subtitle">音声入力履歴（%d日間保持）</string>
+    <string name="history_explanation">説明：%s</string>
+    <string name="intent_content">コンテンツ</string>
+    <string name="intent_edit">編集</string>
+    <string name="intent_send">送信</string>
+    <string name="time_just_now">たった今</string>
+    <string name="time_minutes_ago">%d分前</string>
+    <string name="time_hours_ago">%d時間前</string>
+    <string name="time_yesterday">昨日</string>
+    <string name="time_days_ago">%d日前</string>
+    <string name="btn_play_audio">音声を再生</string>
+    <string name="btn_playing">再生中…</string>
+    <string name="btn_delete">削除</string>
+
+    <!-- Edit button -->
+    <string name="edit_button_label">編集</string>
+    <string name="settings_edit_prompt">編集コマンドプロンプト</string>
+    <string name="settings_edit_prompt_desc">編集ボタンで使用されるプロンプト</string>
+    <string name="ime_edit">編集</string>
+
+    <!-- IME keyboard -->
+    <string name="ime_placeholder">マイクをタップして録音…</string>
+    <string name="ime_rec">録音</string>
+    <string name="ime_stop">停止</string>
+    <string name="ime_send">送信 ↵</string>
+    <string name="ime_clear">クリア</string>
+    <string name="ime_mic_permission">マイクの権限が必要です。先にChatyInputアプリを開いて権限を許可してください。</string>
+    <string name="ime_recording_failed">録音失敗：%s</string>
+    <string name="ime_no_audio">音声が録音されていません</string>
+    <string name="ime_configure_api">ChatyInputアプリでAPIキーを設定してください</string>
+</resources>

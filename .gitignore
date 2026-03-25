@@ -1,0 +1,19 @@
+*.iml
+.gradle/
+/local.properties
+/.idea/
+/build/
+/app/build/
+/captures
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+
+# Sensitive
+.env
+*.key
+*.pem
+*.jks
+*.keystore
+signing.properties
