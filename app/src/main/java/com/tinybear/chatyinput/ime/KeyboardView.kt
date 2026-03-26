@@ -35,12 +35,19 @@ fun KeyboardView(
     isEditMode: Boolean = false,
     errorMessage: String?,
     holdToRecord: Boolean = false,
+    queueStatusText: String = "",
+    isVadMode: Boolean = false,
+    isVadListening: Boolean = false,
+    isVadSpeaking: Boolean = false,
+    isVadEditMode: Boolean = false,
     onStartRecording: () -> Unit = {},
     onStopRecording: () -> Unit = {},
     onToggleRecording: () -> Unit,
     onStartEditRecording: () -> Unit = {},
     onStopEditRecording: () -> Unit = {},
     onToggleEditRecording: () -> Unit = {},
+    onToggleVadVoice: () -> Unit = {},
+    onToggleVadEdit: () -> Unit = {},
     onInsert: () -> Unit,
     onClear: () -> Unit,
     onSwitchKeyboard: () -> Unit,
@@ -126,16 +133,37 @@ fun KeyboardView(
             )
         }
 
-        // AI 处理说明
-        if (lastAction.isNotEmpty()) {
-            Text(
-                text = "\u2192 $lastAction",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
+        // AI 处理说明 + 队列状态
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (lastAction.isNotEmpty()) {
+                Text(
+                    text = "\u2192 $lastAction",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            }
+            if (queueStatusText.isNotEmpty()) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(12.dp),
+                        strokeWidth = 1.5.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = queueStatusText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
         }
 
         // 主操作区：左列 | PTT(大) | 右列
@@ -171,40 +199,129 @@ fun KeyboardView(
                 ) { Text("\uD83C\uDF10", fontSize = 14.sp) }
             }
 
-            // 中间：PTT 大按钮(3/4) + 编辑按钮(1/4)
-            Row(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                horizontalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
-                // PTT 大按钮 (3/4)
-                val pttColor = if (isRecording && !isEditMode) Color.Red
-                               else MaterialTheme.colorScheme.primary
-                Surface(
-                    modifier = Modifier
-                        .weight(3f)
-                        .fillMaxHeight()
-                        .pointerInput(holdToRecord, isProcessing) {
-                            if (isProcessing) return@pointerInput
-                            detectTapGestures(
-                                onPress = {
-                                    if (holdToRecord) {
-                                        onStartRecording()
-                                        tryAwaitRelease()
-                                        onStopRecording()
-                                    } else {
-                                        tryAwaitRelease()
-                                        onToggleRecording()
-                                    }
-                                }
-                            )
-                        },
-                    shape = RoundedCornerShape(10.dp),
-                    color = if (isProcessing) pttColor.copy(alpha = 0.5f) else pttColor
+            // 中间：VAD 模式显示语音/编辑切换按钮，PTT/Toggle 模式显示录音按钮
+            if (isVadMode) {
+                // VAD 模式：语音按钮(3/4) + 编辑按钮(1/4)，手动开始/停止
+                Row(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        if (isProcessing) {
-                            CircularProgressIndicator(modifier = Modifier.size(28.dp), color = Color.White, strokeWidth = 2.dp)
-                        } else {
+                    // 语音 VAD 按钮 (3/4)
+                    val isVoiceActive = isVadListening && !isVadEditMode
+                    val voiceColor = if (isVoiceActive) Color.Red
+                                     else MaterialTheme.colorScheme.primary
+                    Surface(
+                        modifier = Modifier
+                            .weight(3f)
+                            .fillMaxHeight()
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {
+                                        tryAwaitRelease()
+                                        onToggleVadVoice()
+                                    }
+                                )
+                            },
+                        shape = RoundedCornerShape(10.dp),
+                        color = voiceColor
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                if (isVoiceActive) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(20.dp),
+                                        color = Color.White,
+                                        strokeWidth = 2.dp
+                                    )
+                                    Text(
+                                        if (isVadSpeaking) stringResource(R.string.vad_speaking)
+                                        else stringResource(R.string.vad_listening),
+                                        fontSize = 16.sp,
+                                        color = Color.White
+                                    )
+                                } else {
+                                    Text(
+                                        "\uD83C\uDFA4 $recText",
+                                        fontSize = 20.sp,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // 编辑 VAD 按钮 (1/4)
+                    val isEditActive = isVadListening && isVadEditMode
+                    val editVadColor = if (isEditActive) Color.Red
+                                       else MaterialTheme.colorScheme.secondary
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .pointerInput(buffer) {
+                                if (buffer.isEmpty() && !isEditActive) return@pointerInput
+                                detectTapGestures(
+                                    onPress = {
+                                        tryAwaitRelease()
+                                        onToggleVadEdit()
+                                    }
+                                )
+                            },
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (buffer.isEmpty() && !isEditActive) editVadColor.copy(alpha = 0.3f)
+                                else editVadColor
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            if (isEditActive) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(18.dp),
+                                    color = Color.White,
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Text(
+                                    "\u270F\uFE0F",
+                                    fontSize = 18.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                // PTT / Toggle 模式：PTT 大按钮(3/4) + 编辑按钮(1/4)
+                Row(
+                    modifier = Modifier.weight(1f).fillMaxHeight(),
+                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                ) {
+                    // PTT 大按钮 (3/4) — 不再因 isProcessing 而禁用
+                    val pttColor = if (isRecording && !isEditMode) Color.Red
+                                   else MaterialTheme.colorScheme.primary
+                    Surface(
+                        modifier = Modifier
+                            .weight(3f)
+                            .fillMaxHeight()
+                            .pointerInput(holdToRecord) {
+                                detectTapGestures(
+                                    onPress = {
+                                        if (holdToRecord) {
+                                            onStartRecording()
+                                            tryAwaitRelease()
+                                            onStopRecording()
+                                        } else {
+                                            tryAwaitRelease()
+                                            onToggleRecording()
+                                        }
+                                    }
+                                )
+                            },
+                        shape = RoundedCornerShape(10.dp),
+                        color = pttColor
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Text(
                                 if (isRecording && !isEditMode) "\u25A0 $stopText" else "\uD83C\uDFA4 $recText",
                                 fontSize = 20.sp,
@@ -212,39 +329,39 @@ fun KeyboardView(
                             )
                         }
                     }
-                }
 
-                // 编辑按钮 (1/4)
-                val editColor = if (isRecording && isEditMode) Color.Red
-                                else MaterialTheme.colorScheme.secondary
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .pointerInput(holdToRecord, isProcessing, buffer) {
-                            if (isProcessing || buffer.isEmpty()) return@pointerInput
-                            detectTapGestures(
-                                onPress = {
-                                    if (holdToRecord) {
-                                        onStartEditRecording()
-                                        tryAwaitRelease()
-                                        onStopEditRecording()
-                                    } else {
-                                        tryAwaitRelease()
-                                        onToggleEditRecording()
+                    // 编辑按钮 (1/4) — 不再因 isProcessing 而禁用
+                    val editColor = if (isRecording && isEditMode) Color.Red
+                                    else MaterialTheme.colorScheme.secondary
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .pointerInput(holdToRecord, buffer) {
+                                if (buffer.isEmpty()) return@pointerInput
+                                detectTapGestures(
+                                    onPress = {
+                                        if (holdToRecord) {
+                                            onStartEditRecording()
+                                            tryAwaitRelease()
+                                            onStopEditRecording()
+                                        } else {
+                                            tryAwaitRelease()
+                                            onToggleEditRecording()
+                                        }
                                     }
-                                }
+                                )
+                            },
+                        shape = RoundedCornerShape(10.dp),
+                        color = if (buffer.isEmpty()) editColor.copy(alpha = 0.3f) else editColor
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Text(
+                                if (isRecording && isEditMode) "\u25A0" else "\u270F\uFE0F",
+                                fontSize = 18.sp,
+                                color = Color.White
                             )
-                        },
-                    shape = RoundedCornerShape(10.dp),
-                    color = if (buffer.isEmpty() || isProcessing) editColor.copy(alpha = 0.3f) else editColor
-                ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        Text(
-                            if (isRecording && isEditMode) "■" else "✏️",
-                            fontSize = 18.sp,
-                            color = Color.White
-                        )
+                        }
                     }
                 }
             }

@@ -23,15 +23,23 @@
     <string name="error_configure_api">請在設定中配置 API 金鑰</string>
     <string name="last_segment">最近片段：%s</string>
     <string name="last_action">最近操作：%s</string>
+    <string name="vad_listening">聆聽中…</string>
+    <string name="vad_speaking">說話中…</string>
+    <string name="queue_progress">處理中 %1$d/%2$d…</string>
 
     <!-- Settings screen -->
     <string name="settings_stt_provider">語音辨識</string>
     <string name="settings_llm_provider">語言模型</string>
     <string name="settings_language">語言</string>
     <string name="settings_recording">錄音</string>
+    <string name="settings_recording_mode">錄音模式</string>
     <string name="settings_hold_to_record">按住錄音</string>
     <string name="settings_hold_desc">按住麥克風錄音，放開停止</string>
     <string name="settings_tap_desc">點擊開始，再次點擊停止</string>
+    <string name="settings_mode_ptt">按住錄音</string>
+    <string name="settings_mode_toggle">點擊錄音</string>
+    <string name="settings_mode_vad">免持 (VAD)</string>
+    <string name="settings_silence_threshold">靜音閾值</string>
     <string name="settings_system_prompt">系統提示詞</string>
     <string name="settings_reset_default">恢復預設</string>
     <string name="btn_save">儲存</string>
@@ -60,6 +68,7 @@
     <string name="intent_content">內容</string>
     <string name="intent_edit">編輯</string>
     <string name="intent_send">傳送</string>
+    <string name="intent_undo">復原</string>
     <string name="time_just_now">剛剛</string>
     <string name="time_minutes_ago">%d分鐘前</string>
     <string name="time_hours_ago">%d小時前</string>

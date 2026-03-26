@@ -84,10 +84,20 @@ class AppConfig(context: Context) {
     val resolvedLanguage: AppLanguage
         get() = if (language == AppLanguage.AUTO) AppLanguage.detectSystem() else language
 
-    // 长按录音模式（默认关闭 = 点击切换）
+    // Legacy: derived from recordingMode for backward compatibility
     var holdToRecord: Boolean
-        get() = prefs.getBoolean("hold_to_record", false)
-        set(v) = prefs.edit().putBoolean("hold_to_record", v).apply()
+        get() = recordingMode == "ptt"
+        set(v) { if (v) recordingMode = "ptt" else recordingMode = "toggle" }
+
+    // Recording mode: "ptt", "toggle", "vad"
+    var recordingMode: String
+        get() = prefs.getString("recording_mode", "ptt") ?: "ptt"
+        set(v) = prefs.edit().putString("recording_mode", v).apply()
+
+    // VAD silence threshold in seconds (0.5 - 3.0)
+    var silenceThreshold: Float
+        get() = prefs.getFloat("silence_threshold", 1.5f)
+        set(v) = prefs.edit().putFloat("silence_threshold", v).apply()
 
     // 常用词列表（逗号分隔存储）
     var customWords: List<String>

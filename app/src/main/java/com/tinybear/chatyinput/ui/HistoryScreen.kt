@@ -240,6 +240,7 @@ private fun IntentBadge(intent: VoiceIntent) {
         VoiceIntent.CONTENT -> stringResource(R.string.intent_content) to MaterialTheme.colorScheme.primary
         VoiceIntent.EDIT -> stringResource(R.string.intent_edit) to MaterialTheme.colorScheme.tertiary
         VoiceIntent.SEND -> stringResource(R.string.intent_send) to MaterialTheme.colorScheme.secondary
+        VoiceIntent.UNDO -> stringResource(R.string.intent_undo) to MaterialTheme.colorScheme.error
     }
     Surface(shape = RoundedCornerShape(4.dp), color = color.copy(alpha = 0.12f)) {
         Text(

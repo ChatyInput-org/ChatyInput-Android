@@ -14,13 +14,11 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.tinybear.chatyinput.R
 import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.config.LocaleHelper
-import com.tinybear.chatyinput.model.HistoryEntry
 import com.tinybear.chatyinput.model.VoiceIntent
 import com.tinybear.chatyinput.service.AudioCaptureService
-import com.tinybear.chatyinput.service.HistoryManager
-import com.tinybear.chatyinput.service.VoiceIntentProcessor
+import com.tinybear.chatyinput.service.RecordingPipeline
+import com.tinybear.chatyinput.service.VadService
 import kotlinx.coroutines.*
-import java.util.UUID
 
 // IME 输入法服务
 // 实现 LifecycleOwner + ViewModelStoreOwner + SavedStateRegistryOwner 以支持 Compose
@@ -40,19 +38,29 @@ class ChatyInputIME : InputMethodService(),
     private val audioService = AudioCaptureService()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    // Pipeline 和 VadService（Service 生命周期管理）
+    private var pipeline: RecordingPipeline? = null
+    private var vadService: VadService? = null
+
     // 本地化 Context（用于获取字符串资源）
     private lateinit var localizedContext: Context
-
-    // 当前 group ID
-    private var currentGroupId = UUID.randomUUID().toString()
 
     // 键盘 UI 状态
     private var buffer = mutableStateOf("")
     private var isRecording = mutableStateOf(false)
-    private var isProcessing = mutableStateOf(false)
     private var isEditMode = mutableStateOf(false) // 编辑模式标记
     private var errorMessage = mutableStateOf<String?>(null)
     private var lastAction = mutableStateOf("")
+    // Pipeline 队列状态文字（在 IME 缓冲区旁显示）
+    private var queueStatusText = mutableStateOf("")
+    // VAD 模式状态
+    private var isVadMode = mutableStateOf(false)
+    private var isVadListening = mutableStateOf(false)
+    private var isVadSpeaking = mutableStateOf(false)
+    private var isVadEditMode = mutableStateOf(false) // VAD 编辑模式标记
+
+    // 收集 Pipeline/VAD StateFlow 的协程
+    private var collectorJob: Job? = null
 
     // 在 IME 创建前应用语言设置
     override fun attachBaseContext(newBase: Context) {
@@ -69,11 +77,71 @@ class ChatyInputIME : InputMethodService(),
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
+
+        // 创建 Pipeline 和 VadService（Service 生命周期）
+        val config = AppConfig(applicationContext)
+        pipeline = RecordingPipeline(config, applicationContext).also { p ->
+            p.onBufferUpdated = { result, newBuffer ->
+                buffer.value = newBuffer
+                when (result.intent) {
+                    VoiceIntent.CONTENT -> {
+                        lastAction.value = result.explanation ?: "Added text"
+                    }
+                    VoiceIntent.EDIT -> {
+                        lastAction.value = result.explanation ?: "Edited text"
+                    }
+                    VoiceIntent.SEND -> {
+                        // SEND 意图：通过 currentInputConnection 注入文字
+                        commitTextToEditor(newBuffer)
+                        p.buffer = ""
+                        buffer.value = ""
+                        lastAction.value = "Text sent"
+                    }
+                    VoiceIntent.UNDO -> {
+                        lastAction.value = result.explanation ?: "Reverted to previous version"
+                    }
+                }
+            }
+            p.onError = { msg ->
+                errorMessage.value = msg
+            }
+            p.onSegmentTranscribed = { _ ->
+                // IME 中不单独显示转录结果（空间有限）
+            }
+        }
+
+        vadService = VadService(applicationContext, (config.silenceThreshold * 1000).toLong())
+
+        // 收集 Pipeline 队列状态和 VAD 状态
+        collectorJob = scope.launch {
+            launch {
+                pipeline!!.queueStatus.collect { status ->
+                    queueStatusText.value = if (status.isIdle) "" else "${status.currentIndex}/${status.total}"
+                }
+            }
+            launch {
+                vadService!!.isListening.collect { listening ->
+                    isVadListening.value = listening
+                }
+            }
+            launch {
+                vadService!!.isSpeaking.collect { speaking ->
+                    isVadSpeaking.value = speaking
+                }
+            }
+        }
+
+        // 检查录制模式
+        isVadMode.value = config.recordingMode == "vad"
     }
 
     override fun onCreateInputView(): View {
         // 每次创建键盘视图时刷新本地化（用户可能在主 app 切换了语言）
         localizedContext = LocaleHelper.getLocalizedContext(this)
+
+        // 刷新录制模式配置
+        val config = AppConfig(applicationContext)
+        isVadMode.value = config.recordingMode == "vad"
 
         // 必须在 IME 窗口的 decorView 上设置（Compose 往父级查找，不在 ComposeView 本身）
         window?.window?.decorView?.let { decorView ->
@@ -107,37 +175,114 @@ class ChatyInputIME : InputMethodService(),
             com.tinybear.chatyinput.ui.ChatyInputTheme {
             val bufferValue by buffer
             val recordingValue by isRecording
-            val processingValue by isProcessing
             val editModeValue by isEditMode
             val errorValue by errorMessage
             val actionValue by lastAction
-            val holdMode = AppConfig(applicationContext).holdToRecord
+            val queueText by queueStatusText
+            val vadMode by isVadMode
+            val vadListening by isVadListening
+            val vadSpeaking by isVadSpeaking
+            val vadEditMode by isVadEditMode
+            val holdMode = config.holdToRecord
 
             KeyboardView(
                 buffer = bufferValue,
                 lastAction = actionValue,
                 isRecording = recordingValue,
-                isProcessing = processingValue,
+                isProcessing = false, // 按钮不再因处理中而禁用
                 isEditMode = editModeValue,
                 errorMessage = errorValue,
                 holdToRecord = holdMode,
+                queueStatusText = queueText,
+                isVadMode = vadMode,
+                isVadListening = vadListening,
+                isVadSpeaking = vadSpeaking,
+                isVadEditMode = vadEditMode,
                 onStartRecording = { startRecording() },
                 onStopRecording = { stopRecording() },
                 onToggleRecording = { toggleRecording() },
                 onStartEditRecording = { startEditRecording() },
                 onStopEditRecording = { stopEditRecording() },
                 onToggleEditRecording = { toggleEditRecording() },
+                onToggleVadVoice = { toggleVadVoice() },
+                onToggleVadEdit = { toggleVadEdit() },
                 onInsert = { insertText() },
                 onClear = { clearBuffer() },
                 onSwitchKeyboard = { switchKeyboard() },
                 onDeleteTarget = { deleteTargetText() },
                 onEnter = { commitTextToEditor("\n") },
-                onBufferChange = { buffer.value = it },
+                onBufferChange = { newText ->
+                    buffer.value = newText
+                    pipeline?.buffer = newText
+                },
                 bottomPaddingDp = navBarDp
             )
             } // end ChatyInputTheme
         }
         return composeView
+    }
+
+    // 键盘显示时：刷新 VAD 模式配置（不再自动开始监听）
+    override fun onStartInputView(info: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
+        super.onStartInputView(info, restarting)
+        val config = AppConfig(applicationContext)
+        isVadMode.value = config.recordingMode == "vad"
+    }
+
+    // 键盘隐藏时：停止 VAD 监听
+    override fun onFinishInputView(finishingInput: Boolean) {
+        super.onFinishInputView(finishingInput)
+        vadService?.stop()
+    }
+
+    // 启动 VAD 监听（手动触发，指定是否编辑模式）
+    private fun startVadListening(isEdit: Boolean) {
+        val hasPermission = checkSelfPermission(android.Manifest.permission.RECORD_AUDIO) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        if (!hasPermission) {
+            errorMessage.value = localizedContext.getString(R.string.ime_mic_permission)
+            return
+        }
+
+        val config = AppConfig(applicationContext)
+        isVadEditMode.value = isEdit
+        vadService?.let { vad ->
+            vad.silenceThresholdMs = (config.silenceThreshold * 1000).toLong()
+            vad.start { audioData ->
+                pipeline?.submit(audioData, isEdit = isEdit)
+            }
+        }
+    }
+
+    // 停止 VAD 监听
+    private fun stopVadListening() {
+        vadService?.stop()
+    }
+
+    // 语音 VAD 按钮切换
+    private fun toggleVadVoice() {
+        val listening = isVadListening.value
+        val editMode = isVadEditMode.value
+        if (listening && !editMode) {
+            // 语音模式正在监听 → 停止
+            stopVadListening()
+        } else {
+            if (listening) stopVadListening() // 先停止编辑模式
+            startVadListening(isEdit = false)
+        }
+    }
+
+    // 编辑 VAD 按钮切换
+    private fun toggleVadEdit() {
+        val listening = isVadListening.value
+        val editMode = isVadEditMode.value
+        if (listening && editMode) {
+            // 编辑模式正在监听 → 停止
+            stopVadListening()
+        } else {
+            if (listening) stopVadListening() // 先停止语音模式
+            startVadListening(isEdit = true)
+        }
     }
 
     // 点击切换模式
@@ -173,7 +318,7 @@ class ChatyInputIME : InputMethodService(),
         }
     }
 
-    // 开始录音（长按模式 + 切换模式共用）
+    // 开始录音（长按模式 + 切换模式共用，PTT/Toggle 模式）
     private fun startRecording() {
         android.util.Log.i("ChatyInputIME", "startRecording called")
         errorMessage.value = null
@@ -197,7 +342,7 @@ class ChatyInputIME : InputMethodService(),
         }
     }
 
-    // 停止录音并处理（长按模式 + 切换模式共用）
+    // 停止录音并通过 Pipeline 提交（PTT/Toggle 模式）
     private fun stopRecording() {
         if (!isRecording.value) return
         isRecording.value = false
@@ -208,72 +353,25 @@ class ChatyInputIME : InputMethodService(),
         // 在协程启动前保存当前编辑模式状态
         val editMode = isEditMode.value
         scope.launch {
-            isProcessing.value = true
             errorMessage.value = null
             try {
                 val audioData = audioService.stopRecording()
                 if (audioData == null || audioData.isEmpty()) {
                     errorMessage.value = localizedContext.getString(R.string.ime_no_audio)
-                    isProcessing.value = false
                     return@launch
                 }
 
                 val config = AppConfig(applicationContext)
                 if (!config.isValid) {
                     errorMessage.value = localizedContext.getString(R.string.ime_configure_api)
-                    isProcessing.value = false
                     return@launch
                 }
 
-                val sttProvider = config.makeSTTProvider()
-                val transcript = sttProvider.transcribe(audioData, "m4a")
-
-                // 编辑模式使用 editSystemPrompt
-                val llmProvider = config.makeLLMProvider()
-                val prompt = if (editMode) config.editSystemPrompt else config.systemPrompt
-                val processor = VoiceIntentProcessor(llmProvider, prompt, config.customWords)
-                val result = processor.process(transcript, buffer.value)
-
-                when (result.intent) {
-                    VoiceIntent.CONTENT -> {
-                        buffer.value = if (buffer.value.isEmpty()) result.resultText
-                        else buffer.value + "\n" + result.resultText
-                        lastAction.value = result.explanation ?: "Added text"
-                    }
-                    VoiceIntent.EDIT -> {
-                        buffer.value = result.resultText
-                        lastAction.value = result.explanation ?: "Edited text"
-                    }
-                    VoiceIntent.SEND -> {
-                        commitTextToEditor(buffer.value)
-                        buffer.value = ""
-                        lastAction.value = "Text sent"
-                    }
-                }
-
-                // 保存历史记录
-                val audioFileName = "voice_${System.currentTimeMillis()}.m4a"
-                val entry = HistoryEntry(
-                    id = UUID.randomUUID().toString(),
-                    timestamp = System.currentTimeMillis(),
-                    transcript = transcript,
-                    intent = result.intent,
-                    resultText = result.resultText,
-                    explanation = result.explanation,
-                    audioFileName = audioFileName,
-                    groupId = currentGroupId
-                )
-                HistoryManager.saveEntry(applicationContext, entry, audioData)
-
-                // send 意图：结束当前 group
-                if (result.intent == VoiceIntent.SEND) {
-                    HistoryManager.endGroup(applicationContext, currentGroupId, com.tinybear.chatyinput.model.GroupEndType.SENT, buffer.value)
-                    currentGroupId = UUID.randomUUID().toString()
-                }
+                // 通过 Pipeline 提交（STT 并行 + LLM 排队）
+                pipeline?.submit(audioData, isEdit = editMode)
             } catch (e: Exception) {
                 errorMessage.value = e.message ?: "Processing error"
             } finally {
-                isProcessing.value = false
                 isEditMode.value = false // 处理完毕重置编辑模式
             }
         }
@@ -282,8 +380,15 @@ class ChatyInputIME : InputMethodService(),
     private fun insertText() {
         val text = buffer.value
         if (text.isNotEmpty()) {
-            HistoryManager.endGroup(applicationContext, currentGroupId, com.tinybear.chatyinput.model.GroupEndType.SENT, text)
-            currentGroupId = UUID.randomUUID().toString()
+            pipeline?.let { p ->
+                // 记录 SENT 历史并重置 group
+                com.tinybear.chatyinput.service.HistoryManager.endGroup(
+                    applicationContext, p.currentGroupId,
+                    com.tinybear.chatyinput.model.GroupEndType.SENT, text
+                )
+                p.currentGroupId = java.util.UUID.randomUUID().toString()
+                p.buffer = ""
+            }
         }
         commitTextToEditor(text)
         buffer.value = ""
@@ -295,11 +400,9 @@ class ChatyInputIME : InputMethodService(),
     }
 
     private fun clearBuffer() {
-        if (buffer.value.isNotEmpty()) {
-            HistoryManager.endGroup(applicationContext, currentGroupId, com.tinybear.chatyinput.model.GroupEndType.CLEARED, buffer.value)
-            currentGroupId = UUID.randomUUID().toString()
-        }
+        pipeline?.clearBuffer()
         buffer.value = ""
+        pipeline?.buffer = ""
         errorMessage.value = null
     }
 
@@ -320,6 +423,13 @@ class ChatyInputIME : InputMethodService(),
     }
 
     override fun onDestroy() {
+        // 清理 Pipeline 和 VadService
+        collectorJob?.cancel()
+        vadService?.destroy()
+        pipeline?.destroy()
+        vadService = null
+        pipeline = null
+
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)

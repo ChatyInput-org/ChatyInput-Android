@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 enum class VoiceIntent {
     @SerialName("content") CONTENT,
     @SerialName("edit") EDIT,
-    @SerialName("send") SEND
+    @SerialName("send") SEND,
+    @SerialName("undo") UNDO
 }

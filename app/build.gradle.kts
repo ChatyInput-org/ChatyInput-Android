@@ -13,8 +13,8 @@ android {
         applicationId = "com.tinybear.chatyinput"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "0.1.1"
     }
 
     buildTypes {
@@ -57,4 +57,7 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // ONNX Runtime for Silero VAD
+    implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")
 }

@@ -23,15 +23,23 @@
     <string name="error_configure_api">設定でAPIキーを設定してください</string>
     <string name="last_segment">最近のセグメント：%s</string>
     <string name="last_action">最近の操作：%s</string>
+    <string name="vad_listening">リスニング中…</string>
+    <string name="vad_speaking">発話中…</string>
+    <string name="queue_progress">処理中 %1$d/%2$d…</string>
 
     <!-- Settings screen -->
     <string name="settings_stt_provider">音声認識</string>
     <string name="settings_llm_provider">言語モデル</string>
     <string name="settings_language">言語</string>
     <string name="settings_recording">録音</string>
+    <string name="settings_recording_mode">録音モード</string>
     <string name="settings_hold_to_record">長押しで録音</string>
     <string name="settings_hold_desc">マイクを長押しで録音、離すと停止</string>
     <string name="settings_tap_desc">タップで開始、もう一度タップで停止</string>
+    <string name="settings_mode_ptt">長押し録音</string>
+    <string name="settings_mode_toggle">タップ録音</string>
+    <string name="settings_mode_vad">ハンズフリー (VAD)</string>
+    <string name="settings_silence_threshold">無音しきい値</string>
     <string name="settings_system_prompt">システムプロンプト</string>
     <string name="settings_reset_default">デフォルトに戻す</string>
     <string name="btn_save">保存</string>
@@ -60,6 +68,7 @@
     <string name="intent_content">コンテンツ</string>
     <string name="intent_edit">編集</string>
     <string name="intent_send">送信</string>
+    <string name="intent_undo">元に戻す</string>
     <string name="time_just_now">たった今</string>
     <string name="time_minutes_ago">%d分前</string>
     <string name="time_hours_ago">%d時間前</string>

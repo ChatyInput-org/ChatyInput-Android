@@ -22,13 +22,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tinybear.chatyinput.R
 import com.tinybear.chatyinput.config.AppConfig
-import com.tinybear.chatyinput.model.HistoryEntry
 import com.tinybear.chatyinput.model.VoiceIntent
 import com.tinybear.chatyinput.service.AudioCaptureService
-import com.tinybear.chatyinput.service.HistoryManager
-import com.tinybear.chatyinput.service.VoiceIntentProcessor
+import com.tinybear.chatyinput.service.RecordingPipeline
+import com.tinybear.chatyinput.service.VadService
 import kotlinx.coroutines.launch
-import java.util.UUID
 
 // 语音录制界面，对应 Apple 版 VoiceTabView
 @Composable
@@ -36,26 +34,72 @@ fun VoiceScreen(config: AppConfig) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    // Pipeline 和 VadService（composable 生命周期内唯一实例）
+    val pipeline = remember {
+        RecordingPipeline(config, context)
+    }
+    val vadService = remember {
+        VadService(context, (config.silenceThreshold * 1000).toLong())
+    }
+
     // 状态
     var buffer by remember { mutableStateOf("") }
-    // 当前 group ID（每次 clear/send 后重新生成）
-    var currentGroupId by remember { mutableStateOf(UUID.randomUUID().toString()) }
     var isRecording by remember { mutableStateOf(false) }
-    var isProcessing by remember { mutableStateOf(false) }
     var isEditMode by remember { mutableStateOf(false) } // 编辑模式标记
     var lastSegment by remember { mutableStateOf("") }
     var lastAction by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var hasPermission by remember { mutableStateOf(false) }
 
+    // Pipeline 队列状态
+    val queueStatus by pipeline.queueStatus.collectAsState()
+
+    // VAD 状态
+    val vadListening by vadService.isListening.collectAsState()
+    val vadSpeaking by vadService.isSpeaking.collectAsState()
+
+    // 录制模式
+    val recordingMode = config.recordingMode
+
     // 本地化的错误文字（Compose 内获取，传入非 Compose lambda）
     val strNoAudio = stringResource(R.string.error_no_audio)
-    val strConfigureApi = stringResource(R.string.error_configure_api)
     val strMicPermission = stringResource(R.string.error_mic_permission)
     val strRecordingFailed = stringResource(R.string.error_recording_failed)
 
     // 服务
     val audioService = remember { AudioCaptureService() }
+
+    // 设置 Pipeline 回调
+    LaunchedEffect(Unit) {
+        pipeline.onBufferUpdated = { result, newBuffer ->
+            buffer = newBuffer
+            when (result.intent) {
+                VoiceIntent.CONTENT -> {
+                    lastAction = "Content: ${result.explanation ?: "appended"}"
+                }
+                VoiceIntent.EDIT -> {
+                    lastAction = "Edit: ${result.explanation ?: "edited"}"
+                }
+                VoiceIntent.SEND -> {
+                    lastAction = "Send: ready to send"
+                }
+                VoiceIntent.UNDO -> {
+                    lastAction = "Undo: ${result.explanation ?: "reverted to previous version"}"
+                }
+            }
+        }
+        pipeline.onError = { msg ->
+            errorMessage = msg
+        }
+        pipeline.onSegmentTranscribed = { transcript ->
+            lastSegment = transcript
+        }
+    }
+
+    // 同步 buffer 编辑到 pipeline（用户手动编辑文本缓冲区时）
+    LaunchedEffect(buffer) {
+        pipeline.buffer = buffer
+    }
 
     // 运行时权限请求
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -72,87 +116,73 @@ fun VoiceScreen(config: AppConfig) {
         permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
     }
 
-    // 录音完成后的处理流程（editMode: 是否使用编辑 Prompt）
+    // VAD 模式：手动控制，不再自动启动
+    // 跟踪 VAD 编辑模式（true=编辑模式, false=语音模式）
+    var vadEditMode by remember { mutableStateOf(false) }
+
+    // VAD 启动辅助函数
+    fun startVad(isEdit: Boolean) {
+        if (!hasPermission) {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            return
+        }
+        vadService.silenceThresholdMs = (config.silenceThreshold * 1000).toLong()
+        vadEditMode = isEdit
+        vadService.start { audioData ->
+            pipeline.submit(audioData, isEdit = isEdit)
+        }
+    }
+
+    fun stopVad() {
+        vadService.stop()
+    }
+
+    // DisposableEffect：清理 pipeline 和 vadService
+    DisposableEffect(Unit) {
+        onDispose {
+            vadService.destroy()
+            pipeline.destroy()
+        }
+    }
+
+    // 录音完成后通过 Pipeline 提交（PTT/Toggle 模式）
     fun processRecording(editMode: Boolean = false) {
         scope.launch {
-            isProcessing = true
             errorMessage = null
             try {
-                // 1. 停止录音，获取音频数据
                 val audioData = audioService.stopRecording()
                 if (audioData == null || audioData.isEmpty()) {
                     errorMessage = strNoAudio
-                    isProcessing = false
                     return@launch
                 }
-
-                // 2. 检查配置有效性
-                if (!config.isValid) {
-                    errorMessage = strConfigureApi
-                    isProcessing = false
-                    return@launch
-                }
-
-                // 3. STT 转文字
-                val sttProvider = config.makeSTTProvider()
-                val transcript = sttProvider.transcribe(audioData, "m4a")
-                lastSegment = transcript
-
-                // 4. LLM 意图分类 + 处理（编辑模式使用 editSystemPrompt）
-                val llmProvider = config.makeLLMProvider()
-                val prompt = if (editMode) config.editSystemPrompt else config.systemPrompt
-                val processor = VoiceIntentProcessor(
-                    llmProvider = llmProvider,
-                    systemPrompt = prompt,
-                    customWords = config.customWords
-                )
-                val result = processor.process(transcript, buffer)
-
-                // 5. 根据意图更新缓冲区
-                when (result.intent) {
-                    VoiceIntent.CONTENT -> {
-                        buffer = if (buffer.isEmpty()) {
-                            result.resultText
-                        } else {
-                            buffer + result.resultText
-                        }
-                        lastAction = "Content: ${result.explanation ?: "appended"}"
-                    }
-                    VoiceIntent.EDIT -> {
-                        buffer = result.resultText
-                        lastAction = "Edit: ${result.explanation ?: "edited"}"
-                    }
-                    VoiceIntent.SEND -> {
-                        lastAction = "Send: ready to send"
-                    }
-                }
-
-                // 6. 保存历史记录
-                val audioFileName = "voice_${System.currentTimeMillis()}.m4a"
-                val entry = HistoryEntry(
-                    id = UUID.randomUUID().toString(),
-                    timestamp = System.currentTimeMillis(),
-                    transcript = transcript,
-                    intent = result.intent,
-                    resultText = result.resultText,
-                    explanation = result.explanation,
-                    audioFileName = audioFileName,
-                    groupId = currentGroupId
-                )
-                HistoryManager.saveEntry(context, entry, audioData)
-
-                // send 意图：结束当前 group
-                if (result.intent == VoiceIntent.SEND) {
-                    HistoryManager.endGroup(context, currentGroupId, com.tinybear.chatyinput.model.GroupEndType.SENT, buffer)
-                    currentGroupId = UUID.randomUUID().toString()
-                }
+                pipeline.submit(audioData, isEdit = editMode)
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Unknown error"
             } finally {
-                isProcessing = false
                 isEditMode = false // 处理完毕重置编辑模式
             }
         }
+    }
+
+    // 开始录音的公共逻辑
+    fun startRec() {
+        if (!hasPermission) {
+            permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            return
+        }
+        errorMessage = null
+        try {
+            audioService.startRecording(context.cacheDir)
+            isRecording = true
+        } catch (e: Exception) {
+            errorMessage = "$strRecordingFailed: ${e.message}"
+        }
+    }
+
+    // 停止录音的公共逻辑
+    fun stopRec() {
+        isRecording = false
+        processRecording(editMode = isEditMode)
     }
 
     Column(
@@ -197,135 +227,195 @@ fun VoiceScreen(config: AppConfig) {
             )
         }
 
-        // 处理中指示器
-        if (isProcessing) {
+        // 队列进度指示器（非空闲时显示）
+        if (!queueStatus.isIdle) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
-                Text(stringResource(R.string.processing), style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    stringResource(R.string.queue_progress, queueStatus.currentIndex, queueStatus.total),
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
 
-        // 开始录音的公共逻辑
-        fun startRec() {
-            if (!hasPermission) {
-                permissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
-                return
-            }
-            errorMessage = null
-            try {
-                audioService.startRecording(context.cacheDir)
-                isRecording = true
-            } catch (e: Exception) {
-                errorMessage = "$strRecordingFailed: ${e.message}"
-            }
-        }
-
-        // 停止录音的公共逻辑
-        fun stopRec() {
-            isRecording = false
-            processRecording(editMode = isEditMode)
-        }
-
-        // 录音按钮：支持点击切换和长按模式
-        val holdMode = config.holdToRecord
-        // 按钮文字
-        val buttonText = if (isRecording) {
-            if (holdMode) stringResource(R.string.recording_release_to_stop)
-            else stringResource(R.string.recording_tap_to_stop)
-        } else {
-            if (holdMode) stringResource(R.string.btn_hold_to_record)
-            else stringResource(R.string.btn_record)
-        }
-
-        // 录音 + 编辑按钮行（主按钮占 3/4，编辑按钮占 1/4）
-        Row(
-            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            // 主录音按钮（3/4 宽度）
-            Button(
-                onClick = {
-                    if (!holdMode) {
-                        if (isRecording) stopRec() else {
-                            isEditMode = false
-                            startRec()
+        // 根据录制模式显示不同 UI
+        when (recordingMode) {
+            "vad" -> {
+                // VAD 模式：语音/编辑 按钮（手动开始/停止 VAD）
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // 语音按钮（3/4 宽度）
+                    val isVoiceActive = vadListening && !vadEditMode
+                    Button(
+                        onClick = {
+                            if (isVoiceActive) {
+                                stopVad()
+                            } else {
+                                if (vadListening) stopVad() // 先停止编辑模式
+                                startVad(isEdit = false)
+                            }
+                        },
+                        modifier = Modifier.weight(3f).fillMaxHeight(),
+                        colors = if (isVoiceActive) {
+                            ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        } else {
+                            ButtonDefaults.buttonColors()
+                        }
+                    ) {
+                        if (isVoiceActive) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                if (vadSpeaking) stringResource(R.string.vad_speaking)
+                                else stringResource(R.string.vad_listening)
+                            )
+                        } else {
+                            Text(stringResource(R.string.btn_record))
                         }
                     }
-                },
-                modifier = Modifier
-                    .weight(3f)
-                    .fillMaxHeight()
-                    .then(
-                        if (holdMode) {
-                            Modifier.pointerInput(Unit) {
-                                detectTapGestures(
-                                    onPress = {
-                                        if (!isProcessing) {
-                                            isEditMode = false
-                                            startRec()
-                                            tryAwaitRelease()
-                                            if (isRecording) stopRec()
-                                        }
-                                    }
-                                )
-                            }
-                        } else Modifier
-                    ),
-                enabled = !isProcessing,
-                colors = if (isRecording && !isEditMode) {
-                    ButtonDefaults.buttonColors(containerColor = Color.Red)
-                } else {
-                    ButtonDefaults.buttonColors()
-                }
-            ) {
-                Text(buttonText)
-            }
 
-            // 编辑录音按钮（1/4 宽度，铅笔图标）
-            Button(
-                onClick = {
-                    if (!holdMode) {
-                        if (isRecording && isEditMode) {
-                            stopRec()
-                        } else if (!isRecording) {
-                            isEditMode = true
-                            startRec()
+                    // 编辑按钮（1/4 宽度）
+                    val isEditActive = vadListening && vadEditMode
+                    Button(
+                        onClick = {
+                            if (isEditActive) {
+                                stopVad()
+                            } else {
+                                if (vadListening) stopVad() // 先停止语音模式
+                                startVad(isEdit = true)
+                            }
+                        },
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        enabled = buffer.isNotEmpty() || isEditActive,
+                        contentPadding = PaddingValues(4.dp),
+                        colors = if (isEditActive) {
+                            ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        } else {
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    ) {
+                        if (isEditActive) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("\u270F\uFE0F", fontSize = 18.sp)
                         }
                     }
-                },
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .then(
-                        if (holdMode) {
-                            Modifier.pointerInput(Unit) {
-                                detectTapGestures(
-                                    onPress = {
-                                        if (!isProcessing && buffer.isNotEmpty()) {
-                                            isEditMode = true
-                                            startRec()
-                                            tryAwaitRelease()
-                                            if (isRecording) stopRec()
-                                        }
-                                    }
-                                )
-                            }
-                        } else Modifier
-                    ),
-                enabled = !isProcessing && buffer.isNotEmpty() && !(isRecording && !isEditMode),
-                contentPadding = PaddingValues(4.dp),
-                colors = if (isRecording && isEditMode) {
-                    ButtonDefaults.buttonColors(containerColor = Color.Red)
-                } else {
-                    ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.secondary
-                    )
                 }
-            ) {
-                Text("✏️", fontSize = 18.sp)
+            }
+
+            else -> {
+                // PTT / Toggle 模式：显示录音按钮
+                val holdMode = recordingMode == "ptt"
+                val buttonText = if (isRecording) {
+                    if (holdMode) stringResource(R.string.recording_release_to_stop)
+                    else stringResource(R.string.recording_tap_to_stop)
+                } else {
+                    if (holdMode) stringResource(R.string.btn_hold_to_record)
+                    else stringResource(R.string.btn_record)
+                }
+
+                // 录音 + 编辑按钮行（主按钮占 3/4，编辑按钮占 1/4）
+                Row(
+                    modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    // 主录音按钮（3/4 宽度）— 不再因 isProcessing 而禁用
+                    Button(
+                        onClick = {
+                            if (!holdMode) {
+                                if (isRecording) stopRec() else {
+                                    isEditMode = false
+                                    startRec()
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(3f)
+                            .fillMaxHeight()
+                            .then(
+                                if (holdMode) {
+                                    Modifier.pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onPress = {
+                                                isEditMode = false
+                                                startRec()
+                                                tryAwaitRelease()
+                                                if (isRecording) stopRec()
+                                            }
+                                        )
+                                    }
+                                } else Modifier
+                            ),
+                        colors = if (isRecording && !isEditMode) {
+                            ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        } else {
+                            ButtonDefaults.buttonColors()
+                        }
+                    ) {
+                        Text(buttonText)
+                    }
+
+                    // 编辑录音按钮（1/4 宽度，铅笔图标）— 不再因 isProcessing 而禁用
+                    Button(
+                        onClick = {
+                            if (!holdMode) {
+                                if (isRecording && isEditMode) {
+                                    stopRec()
+                                } else if (!isRecording) {
+                                    isEditMode = true
+                                    startRec()
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .then(
+                                if (holdMode) {
+                                    Modifier.pointerInput(Unit) {
+                                        detectTapGestures(
+                                            onPress = {
+                                                if (buffer.isNotEmpty()) {
+                                                    isEditMode = true
+                                                    startRec()
+                                                    tryAwaitRelease()
+                                                    if (isRecording) stopRec()
+                                                }
+                                            }
+                                        )
+                                    }
+                                } else Modifier
+                            ),
+                        enabled = buffer.isNotEmpty() && !(isRecording && !isEditMode),
+                        contentPadding = PaddingValues(4.dp),
+                        colors = if (isRecording && isEditMode) {
+                            ButtonDefaults.buttonColors(containerColor = Color.Red)
+                        } else {
+                            ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary
+                            )
+                        }
+                    ) {
+                        Text("\u270F\uFE0F", fontSize = 18.sp)
+                    }
+                }
             }
         }
 
@@ -336,10 +426,7 @@ fun VoiceScreen(config: AppConfig) {
         ) {
             OutlinedButton(
                 onClick = {
-                    if (buffer.isNotEmpty()) {
-                        HistoryManager.endGroup(context, currentGroupId, com.tinybear.chatyinput.model.GroupEndType.CLEARED, buffer)
-                        currentGroupId = UUID.randomUUID().toString()
-                    }
+                    pipeline.clearBuffer()
                     buffer = ""
                     lastSegment = ""
                     lastAction = ""

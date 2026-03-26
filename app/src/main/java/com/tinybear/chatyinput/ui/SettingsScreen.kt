@@ -57,8 +57,12 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
     // 记录初始语言，保存时比较是否切换了
     val initialLanguage = remember { config.language }
 
-    // 长按录音
-    var holdToRecord by remember { mutableStateOf(config.holdToRecord) }
+    // 录音模式
+    var recordingMode by remember { mutableStateOf(config.recordingMode) }
+    val modeOptions = listOf("ptt" to R.string.settings_mode_ptt, "toggle" to R.string.settings_mode_toggle, "vad" to R.string.settings_mode_vad)
+
+    // VAD 静音阈值
+    var silenceThreshold by remember { mutableStateOf(config.silenceThreshold) }
 
     // System Prompt（根据语言动态获取默认值）
     var systemPrompt by remember { mutableStateOf(config.systemPrompt) }
@@ -302,23 +306,56 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
         }
 
         item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_hold_to_record), style = MaterialTheme.typography.bodyLarge)
+            Text(stringResource(R.string.settings_recording_mode), style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(4.dp))
+            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                modeOptions.forEachIndexed { index, (mode, labelRes) ->
+                    SegmentedButton(
+                        selected = recordingMode == mode,
+                        onClick = { recordingMode = mode },
+                        shape = SegmentedButtonDefaults.itemShape(
+                            index = index,
+                            count = modeOptions.size
+                        )
+                    ) {
+                        Text(stringResource(labelRes))
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                when (recordingMode) {
+                    "ptt" -> stringResource(R.string.settings_hold_desc)
+                    "toggle" -> stringResource(R.string.settings_tap_desc)
+                    else -> stringResource(R.string.vad_listening)
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        // VAD 静音阈值滑块（仅 Hands-free 模式显示）
+        if (recordingMode == "vad") {
+            item {
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(stringResource(R.string.settings_silence_threshold), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        if (holdToRecord) stringResource(R.string.settings_hold_desc)
-                        else stringResource(R.string.settings_tap_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        "%.1fs".format(silenceThreshold),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
-                Switch(
-                    checked = holdToRecord,
-                    onCheckedChange = { holdToRecord = it }
+                Slider(
+                    value = silenceThreshold,
+                    onValueChange = { silenceThreshold = (Math.round(it * 10) / 10f) },
+                    valueRange = 0.5f..3.0f,
+                    steps = 24,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -463,7 +500,8 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
                     config.systemPrompt = systemPrompt
                     config.editSystemPrompt = editSystemPrompt
                     config.language = language
-                    config.holdToRecord = holdToRecord
+                    config.recordingMode = recordingMode
+                    config.silenceThreshold = silenceThreshold
                     config.historyRetentionDays = historyRetentionDays
                     showSaved = true
 
@@ -497,7 +535,7 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
             Text("About", style = MaterialTheme.typography.titleMedium)
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "ChatyInput v0.1.0",
+                "ChatyInput v0.1.1",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

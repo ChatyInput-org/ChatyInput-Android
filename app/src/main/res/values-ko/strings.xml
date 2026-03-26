@@ -23,15 +23,23 @@
     <string name="error_configure_api">설정에서 API 키를 구성하세요</string>
     <string name="last_segment">최근 세그먼트: %s</string>
     <string name="last_action">최근 작업: %s</string>
+    <string name="vad_listening">듣는 중…</string>
+    <string name="vad_speaking">말하는 중…</string>
+    <string name="queue_progress">처리 중 %1$d/%2$d…</string>
 
     <!-- Settings screen -->
     <string name="settings_stt_provider">음성 인식</string>
     <string name="settings_llm_provider">언어 모델</string>
     <string name="settings_language">언어</string>
     <string name="settings_recording">녹음</string>
+    <string name="settings_recording_mode">녹음 모드</string>
     <string name="settings_hold_to_record">길게 눌러 녹음</string>
     <string name="settings_hold_desc">마이크를 길게 눌러 녹음, 놓으면 중지</string>
     <string name="settings_tap_desc">탭하여 시작, 다시 탭하여 중지</string>
+    <string name="settings_mode_ptt">길게 눌러 녹음</string>
+    <string name="settings_mode_toggle">탭 녹음</string>
+    <string name="settings_mode_vad">핸즈프리 (VAD)</string>
+    <string name="settings_silence_threshold">무음 임계값</string>
     <string name="settings_system_prompt">시스템 프롬프트</string>
     <string name="settings_reset_default">기본값으로 재설정</string>
     <string name="btn_save">저장</string>
@@ -60,6 +68,7 @@
     <string name="intent_content">내용</string>
     <string name="intent_edit">편집</string>
     <string name="intent_send">전송</string>
+    <string name="intent_undo">실행취소</string>
     <string name="time_just_now">방금</string>
     <string name="time_minutes_ago">%d분 전</string>
     <string name="time_hours_ago">%d시간 전</string>

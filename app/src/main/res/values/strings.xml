@@ -23,15 +23,23 @@
     <string name="error_configure_api">Please configure API keys in Settings</string>
     <string name="last_segment">Last segment: %s</string>
     <string name="last_action">Last action: %s</string>
+    <string name="vad_listening">Listening...</string>
+    <string name="vad_speaking">Speaking...</string>
+    <string name="queue_progress">Processing %1$d/%2$d...</string>
 
     <!-- Settings screen -->
     <string name="settings_stt_provider">STT Provider</string>
     <string name="settings_llm_provider">LLM Provider</string>
     <string name="settings_language">Language</string>
     <string name="settings_recording">Recording</string>
+    <string name="settings_recording_mode">Recording Mode</string>
     <string name="settings_hold_to_record">Hold to Record</string>
     <string name="settings_hold_desc">Press and hold mic to record, release to stop</string>
     <string name="settings_tap_desc">Tap to start, tap again to stop</string>
+    <string name="settings_mode_ptt">PTT (Hold)</string>
+    <string name="settings_mode_toggle">Toggle (Tap)</string>
+    <string name="settings_mode_vad">Hands-free (VAD)</string>
+    <string name="settings_silence_threshold">Silence Threshold</string>
     <string name="settings_system_prompt">System Prompt</string>
     <string name="settings_reset_default">Reset to Default</string>
     <string name="btn_save">Save</string>
@@ -60,6 +68,7 @@
     <string name="intent_content">Content</string>
     <string name="intent_edit">Edit</string>
     <string name="intent_send">Send</string>
+    <string name="intent_undo">Undo</string>
     <string name="time_just_now">Just now</string>
     <string name="time_minutes_ago">%dm ago</string>
     <string name="time_hours_ago">%dh ago</string>
