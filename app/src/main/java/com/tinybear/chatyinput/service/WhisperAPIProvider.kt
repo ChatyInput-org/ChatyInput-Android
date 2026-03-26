@@ -38,6 +38,10 @@ class WhisperAPIProvider(
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("model", model)
                 .addFormDataPart("language", language)
+                .addFormDataPart("response_format", "verbose_json")
+                .addFormDataPart("no_speech_threshold", "0.2")
+                .addFormDataPart("condition_on_previous_text", "false")
+                .addFormDataPart("beam_size", "5")
                 .addFormDataPart(
                     "file", "audio.$fileExtension",
                     audioData.toRequestBody(mimeType.toMediaType())
@@ -59,6 +63,19 @@ class WhisperAPIProvider(
                 }
 
                 val json = Json.parseToJsonElement(responseBody).jsonObject
+
+                // verbose_json: check no_speech_prob in segments
+                val segments = json["segments"]?.jsonArray
+                if (segments != null && segments.isNotEmpty()) {
+                    val avgNoSpeechProb = segments.map {
+                        it.jsonObject["no_speech_prob"]?.jsonPrimitive?.double ?: 0.0
+                    }.average()
+                    if (avgNoSpeechProb > 0.8) {
+                        // High probability of no speech — return empty
+                        return@withContext ""
+                    }
+                }
+
                 json["text"]?.jsonPrimitive?.content ?: throw STTError.InvalidResponse()
             } catch (e: STTError) {
                 throw e

@@ -27,7 +27,7 @@ class VadService(
         private const val TAG = "VadService"
         private const val SAMPLE_RATE = 16000
         private const val FRAME_SIZE = 512 // Silero VAD v5 frame size for 16kHz
-        private const val SPEECH_THRESHOLD = 0.3f // lowered for real-world mic levels
+        private const val SPEECH_THRESHOLD = 0.5f
         // Silero VAD v4 LSTM state dimensions: [2, 1, 64], separate h and c
         private const val STATE_SIZE = 2 * 1 * 64
         private const val AUDIO_GAIN = 10.0f // amplify mic signal
@@ -181,6 +181,8 @@ class VadService(
             var speechActive = false
             var silenceStart = 0L
             var frameCount = 0
+            var speechFrameCount = 0
+            var totalSegFrames = 0
 
             while (isActive && _isListening.value) {
                 val read = audioRecord?.read(readBuf, 0, FRAME_SIZE) ?: -1
@@ -218,13 +220,18 @@ class VadService(
                         if (!speechActive) {
                             speechActive = true
                             pcmCollector.clear()
+                            speechFrameCount = 0
+                            totalSegFrames = 0
                             Log.d(TAG, "Speech started")
                         }
                         silenceStart = 0L
                         _isSpeaking.value = true
+                        speechFrameCount++
+                        totalSegFrames++
                         for (i in 0 until FRAME_SIZE) pcmCollector.add(frameBuf[i])
                     } else {
                         if (speechActive) {
+                            totalSegFrames++
                             // Collect during short pauses
                             for (i in 0 until FRAME_SIZE) pcmCollector.add(frameBuf[i])
 
@@ -237,8 +244,13 @@ class VadService(
                                 silenceStart = 0L
                                 resetState()
 
-                                if (pcmCollector.size > SAMPLE_RATE / 2) {
-                                    Log.i(TAG, "Segment ready: ${pcmCollector.size} samples")
+                                // Calculate speech ratio and RMS
+                                val speechRatio = if (totalSegFrames > 0) speechFrameCount.toFloat() / totalSegFrames else 0f
+                                val segmentRms = Math.sqrt(pcmCollector.map { (it.toFloat() / 32768f).toDouble().let { v -> v * v } }.average()).toFloat()
+                                val minDuration = pcmCollector.size > SAMPLE_RATE  // at least 1 second
+
+                                if (minDuration && speechRatio > 0.3f && segmentRms > 0.002f) {
+                                    Log.i(TAG, "Segment ready: ${pcmCollector.size} samples, rms=${"%.4f".format(segmentRms)}, speechRatio=${"%.2f".format(speechRatio)}, speechFrames=$speechFrameCount/$totalSegFrames")
                                     val pcmBytes = ByteArray(pcmCollector.size * 2)
                                     for (i in pcmCollector.indices) {
                                         pcmBytes[i * 2] = (pcmCollector[i].toInt() and 0xFF).toByte()
@@ -255,8 +267,8 @@ class VadService(
                                         Log.e(TAG, "PCM to m4a conversion failed: ${e.message}")
                                     }
                                 } else {
+                                    Log.d(TAG, "Segment discarded: duration=${pcmCollector.size/SAMPLE_RATE}s, rms=${"%.4f".format(segmentRms)}, speechRatio=${"%.2f".format(speechRatio)}")
                                     pcmCollector.clear()
-                                    Log.d(TAG, "Segment too short, discarded")
                                 }
                             }
                         } else {

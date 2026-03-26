@@ -75,6 +75,14 @@ class RecordingPipeline(
                 val sttProvider = config.makeSTTProvider()
                 val transcript = sttProvider.transcribe(audioData, "m4a")
 
+                // Skip empty transcripts (no speech detected by Whisper)
+                if (transcript.isBlank()) {
+                    Log.i(TAG, "Segment $index: empty transcript, skipping LLM")
+                    processedCount.incrementAndGet()
+                    updateStatus()
+                    return@launch
+                }
+
                 withContext(Dispatchers.Main) {
                     onSegmentTranscribed?.invoke(transcript)
                 }

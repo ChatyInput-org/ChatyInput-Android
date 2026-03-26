@@ -133,23 +133,22 @@ fun KeyboardView(
             )
         }
 
-        // AI 处理说明 + 队列状态
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (lastAction.isNotEmpty()) {
-                Text(
-                    text = "\u2192 $lastAction",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
-            }
-            if (queueStatusText.isNotEmpty()) {
+        // AI 处理说明
+        if (lastAction.isNotEmpty()) {
+            Text(
+                text = "\u2192 $lastAction",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
+            )
+        }
+
+        // 队列状态
+        if (queueStatusText.isNotEmpty()) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(12.dp),
