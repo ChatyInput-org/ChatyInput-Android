@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">ChatyInput</string>
+
+    <!-- Tab labels -->
+    <string name="tab_voice">الصوت</string>
+    <string name="tab_history">السجل</string>
+    <string name="tab_dictionary">القاموس</string>
+    <string name="tab_settings">الإعدادات</string>
+
+    <!-- Voice screen -->
+    <string name="text_buffer">مخزن النص المؤقت</string>
+    <string name="btn_record">تسجيل</string>
+    <string name="btn_hold_to_record">اضغط مع الاستمرار للتسجيل</string>
+    <string name="recording_tap_to_stop">جارٍ التسجيل… (انقر للإيقاف)</string>
+    <string name="recording_release_to_stop">جارٍ التسجيل… (حرّر للإيقاف)</string>
+    <string name="btn_stop_recording">إيقاف التسجيل</string>
+    <string name="processing">جارٍ المعالجة…</string>
+    <string name="btn_clear">مسح</string>
+    <string name="btn_copy">نسخ</string>
+    <string name="error_no_audio">لم يتم تسجيل أي صوت</string>
+    <string name="error_recording_failed">فشل بدء التسجيل</string>
+    <string name="error_mic_permission">إذن الميكروفون مطلوب</string>
+    <string name="error_configure_api">يرجى تكوين مفاتيح API في الإعدادات</string>
+    <string name="last_segment">آخر مقطع: %s</string>
+    <string name="last_action">آخر إجراء: %s</string>
+    <string name="vad_listening">جارٍ الاستماع…</string>
+    <string name="vad_speaking">جارٍ التحدث…</string>
+    <string name="queue_progress">جارٍ المعالجة %1$d/%2$d…</string>
+
+    <!-- Settings screen -->
+    <string name="settings_stt_provider">مزوّد التعرف على الكلام</string>
+    <string name="settings_llm_provider">مزوّد النموذج اللغوي</string>
+    <string name="settings_language">اللغة</string>
+    <string name="settings_recording">التسجيل</string>
+    <string name="settings_recording_mode">وضع التسجيل</string>
+    <string name="settings_hold_to_record">اضغط مع الاستمرار للتسجيل</string>
+    <string name="settings_hold_desc">اضغط مع الاستمرار على الميكروفون للتسجيل، حرّر للإيقاف</string>
+    <string name="settings_tap_desc">انقر للبدء، انقر مرة أخرى للإيقاف</string>
+    <string name="settings_mode_ptt">ضغط مستمر</string>
+    <string name="settings_mode_toggle">نقر</string>
+    <string name="settings_mode_vad">بدون استخدام اليدين (VAD)</string>
+    <string name="settings_silence_threshold">عتبة الصمت</string>
+    <string name="settings_system_prompt">موجّه النظام</string>
+    <string name="settings_reset_default">إعادة التعيين للافتراضي</string>
+    <string name="btn_save">حفظ</string>
+    <string name="settings_saved">تم حفظ الإعدادات.</string>
+    <string name="settings_history">السجل</string>
+    <string name="settings_retention">مدة الاحتفاظ</string>
+    <string name="settings_clear_all">مسح كل السجل</string>
+    <string name="settings_clear_confirm_title">مسح كل السجل</string>
+    <string name="settings_clear_confirm_msg">سيؤدي هذا إلى حذف كل سجل الإدخال الصوتي وملفات الصوت المحفوظة. لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="settings_are_you_sure">هل أنت متأكد؟</string>
+    <string name="btn_cancel">إلغاء</string>
+    <string name="settings_history_cleared">تم مسح السجل.</string>
+    <string name="retention_days">%d ي</string>
+
+    <!-- Dictionary screen -->
+    <string name="dict_title">القاموس المخصص</string>
+    <string name="dict_description">أضف كلمات غالباً ما يتم التعرف عليها بشكل خاطئ عبر الإدخال الصوتي. سيعطي الذكاء الاصطناعي الأولوية لهذه الكلمات عند سماع أصوات مشابهة.</string>
+    <string name="dict_new_word">كلمة جديدة</string>
+    <string name="dict_empty">لا توجد كلمات مخصصة بعد</string>
+    <string name="dict_word_count">%d كلمات</string>
+
+    <!-- History screen -->
+    <string name="history_empty">لا يوجد سجل بعد</string>
+    <string name="history_subtitle">سجل الإدخال الصوتي (احتفاظ %d يوم)</string>
+    <string name="history_explanation">التوضيح: %s</string>
+    <string name="intent_content">محتوى</string>
+    <string name="intent_edit">تحرير</string>
+    <string name="intent_send">إرسال</string>
+    <string name="intent_undo">تراجع</string>
+    <string name="time_just_now">الآن</string>
+    <string name="time_minutes_ago">منذ %d د</string>
+    <string name="time_hours_ago">منذ %d س</string>
+    <string name="time_yesterday">أمس</string>
+    <string name="time_days_ago">منذ %d ي</string>
+    <string name="btn_play_audio">تشغيل الصوت</string>
+    <string name="btn_playing">جارٍ التشغيل…</string>
+    <string name="btn_delete">حذف</string>
+
+    <!-- Edit button -->
+    <string name="edit_button_label">تحرير</string>
+    <string name="settings_edit_prompt">موجّه أمر التحرير</string>
+    <string name="settings_edit_prompt_desc">الموجّه المستخدم لزر التحرير</string>
+    <string name="ime_edit">تحرير</string>
+
+    <!-- IME keyboard -->
+    <string name="ime_placeholder">انقر على الميكروفون للتسجيل…</string>
+    <string name="ime_rec">تسجيل</string>
+    <string name="ime_stop">إيقاف</string>
+    <string name="ime_send">إرسال &#x21B5;</string>
+    <string name="ime_clear">مسح</string>
+    <string name="ime_mic_permission">إذن الميكروفون مطلوب. افتح تطبيق ChatyInput أولاً لمنح الإذن.</string>
+    <string name="ime_recording_failed">فشل التسجيل: %s</string>
+    <string name="ime_no_audio">لم يتم تسجيل أي صوت</string>
+    <string name="ime_configure_api">قم بتكوين مفاتيح API في تطبيق ChatyInput</string>
+</resources>

@@ -15,6 +15,11 @@ object LocaleHelper {
             AppLanguage.EN -> Locale.ENGLISH
             AppLanguage.JA -> Locale.JAPANESE
             AppLanguage.KO -> Locale.KOREAN
+            AppLanguage.FR -> Locale.FRENCH
+            AppLanguage.ES -> Locale("es")
+            AppLanguage.HI -> Locale("hi")
+            AppLanguage.AR -> Locale("ar")
+            AppLanguage.PT -> Locale("pt")
         }
         val config = context.resources.configuration
         config.setLocale(locale)

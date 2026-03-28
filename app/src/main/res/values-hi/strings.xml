@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">ChatyInput</string>
+
+    <!-- Tab labels -->
+    <string name="tab_voice">आवाज़</string>
+    <string name="tab_history">इतिहास</string>
+    <string name="tab_dictionary">शब्दकोश</string>
+    <string name="tab_settings">सेटिंग्स</string>
+
+    <!-- Voice screen -->
+    <string name="text_buffer">टेक्स्ट बफ़र</string>
+    <string name="btn_record">रिकॉर्ड</string>
+    <string name="btn_hold_to_record">रिकॉर्ड करने के लिए दबाए रखें</string>
+    <string name="recording_tap_to_stop">रिकॉर्डिंग… (रोकने के लिए टैप करें)</string>
+    <string name="recording_release_to_stop">रिकॉर्डिंग… (रोकने के लिए छोड़ें)</string>
+    <string name="btn_stop_recording">रिकॉर्डिंग बंद करें</string>
+    <string name="processing">प्रोसेसिंग…</string>
+    <string name="btn_clear">साफ़ करें</string>
+    <string name="btn_copy">कॉपी करें</string>
+    <string name="error_no_audio">कोई ऑडियो रिकॉर्ड नहीं हुआ</string>
+    <string name="error_recording_failed">रिकॉर्डिंग शुरू करने में विफल</string>
+    <string name="error_mic_permission">माइक्रोफ़ोन की अनुमति आवश्यक है</string>
+    <string name="error_configure_api">कृपया सेटिंग्स में API कुंजियाँ कॉन्फ़िगर करें</string>
+    <string name="last_segment">अंतिम खंड: %s</string>
+    <string name="last_action">अंतिम क्रिया: %s</string>
+    <string name="vad_listening">सुन रहा है…</string>
+    <string name="vad_speaking">बोल रहा है…</string>
+    <string name="queue_progress">प्रोसेसिंग %1$d/%2$d…</string>
+
+    <!-- Settings screen -->
+    <string name="settings_stt_provider">STT प्रदाता</string>
+    <string name="settings_llm_provider">LLM प्रदाता</string>
+    <string name="settings_language">भाषा</string>
+    <string name="settings_recording">रिकॉर्डिंग</string>
+    <string name="settings_recording_mode">रिकॉर्डिंग मोड</string>
+    <string name="settings_hold_to_record">रिकॉर्ड करने के लिए दबाए रखें</string>
+    <string name="settings_hold_desc">रिकॉर्ड करने के लिए माइक दबाए रखें, रोकने के लिए छोड़ें</string>
+    <string name="settings_tap_desc">शुरू करने के लिए टैप करें, फिर से टैप करके बंद करें</string>
+    <string name="settings_mode_ptt">दबाए रखें</string>
+    <string name="settings_mode_toggle">टैप करें</string>
+    <string name="settings_mode_vad">हैंड्स-फ़्री (VAD)</string>
+    <string name="settings_silence_threshold">मौन सीमा</string>
+    <string name="settings_system_prompt">सिस्टम प्रॉम्प्ट</string>
+    <string name="settings_reset_default">डिफ़ॉल्ट पर रीसेट करें</string>
+    <string name="btn_save">सहेजें</string>
+    <string name="settings_saved">सेटिंग्स सहेजी गईं।</string>
+    <string name="settings_history">इतिहास</string>
+    <string name="settings_retention">अवधारण अवधि</string>
+    <string name="settings_clear_all">सारा इतिहास मिटाएँ</string>
+    <string name="settings_clear_confirm_title">सारा इतिहास मिटाएँ</string>
+    <string name="settings_clear_confirm_msg">यह सभी वॉइस इनपुट इतिहास और सहेजी गई ऑडियो फ़ाइलें हटा देगा। यह क्रिया पूर्ववत नहीं की जा सकती।</string>
+    <string name="settings_are_you_sure">क्या आप सुनिश्चित हैं?</string>
+    <string name="btn_cancel">रद्द करें</string>
+    <string name="settings_history_cleared">इतिहास मिटाया गया।</string>
+    <string name="retention_days">%d दिन</string>
+
+    <!-- Dictionary screen -->
+    <string name="dict_title">कस्टम शब्दकोश</string>
+    <string name="dict_description">ऐसे शब्द जोड़ें जो वॉइस इनपुट द्वारा अक्सर गलत पहचाने जाते हैं। AI समान ध्वनि सुनने पर इन शब्दों को प्राथमिकता देगा।</string>
+    <string name="dict_new_word">नया शब्द</string>
+    <string name="dict_empty">अभी तक कोई कस्टम शब्द नहीं</string>
+    <string name="dict_word_count">%d शब्द</string>
+
+    <!-- History screen -->
+    <string name="history_empty">अभी तक कोई इतिहास नहीं</string>
+    <string name="history_subtitle">वॉइस इनपुट इतिहास (%d दिन अवधारण)</string>
+    <string name="history_explanation">व्याख्या: %s</string>
+    <string name="intent_content">सामग्री</string>
+    <string name="intent_edit">संपादन</string>
+    <string name="intent_send">भेजें</string>
+    <string name="intent_undo">पूर्ववत करें</string>
+    <string name="time_just_now">अभी-अभी</string>
+    <string name="time_minutes_ago">%d मिनट पहले</string>
+    <string name="time_hours_ago">%d घंटे पहले</string>
+    <string name="time_yesterday">कल</string>
+    <string name="time_days_ago">%d दिन पहले</string>
+    <string name="btn_play_audio">ऑडियो चलाएँ</string>
+    <string name="btn_playing">चल रहा है…</string>
+    <string name="btn_delete">हटाएँ</string>
+
+    <!-- Edit button -->
+    <string name="edit_button_label">संपादित करें</string>
+    <string name="settings_edit_prompt">एडिट कमांड प्रॉम्प्ट</string>
+    <string name="settings_edit_prompt_desc">एडिट बटन के लिए उपयोग किया जाने वाला प्रॉम्प्ट</string>
+    <string name="ime_edit">एडिट</string>
+
+    <!-- IME keyboard -->
+    <string name="ime_placeholder">रिकॉर्ड करने के लिए माइक टैप करें…</string>
+    <string name="ime_rec">रिकॉर्ड</string>
+    <string name="ime_stop">रोकें</string>
+    <string name="ime_send">भेजें &#x21B5;</string>
+    <string name="ime_clear">साफ़ करें</string>
+    <string name="ime_mic_permission">माइक अनुमति आवश्यक है। अनुमति देने के लिए पहले ChatyInput ऐप खोलें।</string>
+    <string name="ime_recording_failed">रिकॉर्डिंग विफल: %s</string>
+    <string name="ime_no_audio">कोई ऑडियो रिकॉर्ड नहीं हुआ</string>
+    <string name="ime_configure_api">ChatyInput ऐप में API कुंजियाँ कॉन्फ़िगर करें</string>
+</resources>

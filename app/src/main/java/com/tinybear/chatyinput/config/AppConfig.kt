@@ -133,7 +133,12 @@ class AppConfig(context: Context) {
         AppLanguage.EN -> "en"
         AppLanguage.JA -> "ja"
         AppLanguage.KO -> "ko"
-        AppLanguage.AUTO -> "zh"
+        AppLanguage.FR -> "fr"
+        AppLanguage.ES -> "es"
+        AppLanguage.HI -> "hi"
+        AppLanguage.AR -> "ar"
+        AppLanguage.PT -> "pt"
+        AppLanguage.AUTO -> "en"
     }
 
     // 工厂方法

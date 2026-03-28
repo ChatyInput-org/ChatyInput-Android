@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">ChatyInput</string>
+
+    <!-- Tab labels -->
+    <string name="tab_voice">Voz</string>
+    <string name="tab_history">Histórico</string>
+    <string name="tab_dictionary">Dicionário</string>
+    <string name="tab_settings">Configurações</string>
+
+    <!-- Voice screen -->
+    <string name="text_buffer">Buffer de texto</string>
+    <string name="btn_record">Gravar</string>
+    <string name="btn_hold_to_record">Segure para gravar</string>
+    <string name="recording_tap_to_stop">Gravando… (toque para parar)</string>
+    <string name="recording_release_to_stop">Gravando… (solte para parar)</string>
+    <string name="btn_stop_recording">Parar gravação</string>
+    <string name="processing">Processando…</string>
+    <string name="btn_clear">Limpar</string>
+    <string name="btn_copy">Copiar</string>
+    <string name="error_no_audio">Nenhum áudio gravado</string>
+    <string name="error_recording_failed">Falha ao iniciar a gravação</string>
+    <string name="error_mic_permission">Permissão do microfone é necessária</string>
+    <string name="error_configure_api">Configure as chaves de API nas Configurações</string>
+    <string name="last_segment">Último segmento: %s</string>
+    <string name="last_action">Última ação: %s</string>
+    <string name="vad_listening">Ouvindo…</string>
+    <string name="vad_speaking">Falando…</string>
+    <string name="queue_progress">Processando %1$d/%2$d…</string>
+
+    <!-- Settings screen -->
+    <string name="settings_stt_provider">Provedor STT</string>
+    <string name="settings_llm_provider">Provedor LLM</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_recording">Gravação</string>
+    <string name="settings_recording_mode">Modo de gravação</string>
+    <string name="settings_hold_to_record">Segurar para gravar</string>
+    <string name="settings_hold_desc">Segure o microfone para gravar, solte para parar</string>
+    <string name="settings_tap_desc">Toque para iniciar, toque novamente para parar</string>
+    <string name="settings_mode_ptt">Manter pressionado</string>
+    <string name="settings_mode_toggle">Toque</string>
+    <string name="settings_mode_vad">Viva-voz (VAD)</string>
+    <string name="settings_silence_threshold">Limiar de silêncio</string>
+    <string name="settings_system_prompt">Prompt do sistema</string>
+    <string name="settings_reset_default">Restaurar padrão</string>
+    <string name="btn_save">Salvar</string>
+    <string name="settings_saved">Configurações salvas.</string>
+    <string name="settings_history">Histórico</string>
+    <string name="settings_retention">Período de retenção</string>
+    <string name="settings_clear_all">Limpar todo o histórico</string>
+    <string name="settings_clear_confirm_title">Limpar todo o histórico</string>
+    <string name="settings_clear_confirm_msg">Isso excluirá todo o histórico de entrada de voz e arquivos de áudio salvos. Esta ação não pode ser desfeita.</string>
+    <string name="settings_are_you_sure">Tem certeza?</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="settings_history_cleared">Histórico limpo.</string>
+    <string name="retention_days">%dd</string>
+
+    <!-- Dictionary screen -->
+    <string name="dict_title">Dicionário personalizado</string>
+    <string name="dict_description">Adicione palavras frequentemente reconhecidas incorretamente pela entrada de voz. A IA priorizará essas palavras ao ouvir sons semelhantes.</string>
+    <string name="dict_new_word">Nova palavra</string>
+    <string name="dict_empty">Nenhuma palavra personalizada ainda</string>
+    <string name="dict_word_count">%d palavras</string>
+
+    <!-- History screen -->
+    <string name="history_empty">Nenhum histórico ainda</string>
+    <string name="history_subtitle">Histórico de entrada de voz (retenção de %d dias)</string>
+    <string name="history_explanation">Explicação: %s</string>
+    <string name="intent_content">Conteúdo</string>
+    <string name="intent_edit">Edição</string>
+    <string name="intent_send">Envio</string>
+    <string name="intent_undo">Desfazer</string>
+    <string name="time_just_now">Agora mesmo</string>
+    <string name="time_minutes_ago">%d min atrás</string>
+    <string name="time_hours_ago">%d h atrás</string>
+    <string name="time_yesterday">Ontem</string>
+    <string name="time_days_ago">%d d atrás</string>
+    <string name="btn_play_audio">Reproduzir áudio</string>
+    <string name="btn_playing">Reproduzindo…</string>
+    <string name="btn_delete">Excluir</string>
+
+    <!-- Edit button -->
+    <string name="edit_button_label">Editar</string>
+    <string name="settings_edit_prompt">Prompt de comando de edição</string>
+    <string name="settings_edit_prompt_desc">Prompt usado para o botão de edição</string>
+    <string name="ime_edit">EDITAR</string>
+
+    <!-- IME keyboard -->
+    <string name="ime_placeholder">Toque no microfone para gravar…</string>
+    <string name="ime_rec">GRAV</string>
+    <string name="ime_stop">PARAR</string>
+    <string name="ime_send">Enviar &#x21B5;</string>
+    <string name="ime_clear">Limpar</string>
+    <string name="ime_mic_permission">Permissão do microfone necessária. Abra o aplicativo ChatyInput primeiro para conceder a permissão.</string>
+    <string name="ime_recording_failed">Falha na gravação: %s</string>
+    <string name="ime_no_audio">Nenhum áudio gravado</string>
+    <string name="ime_configure_api">Configure as chaves de API no aplicativo ChatyInput</string>
+</resources>
