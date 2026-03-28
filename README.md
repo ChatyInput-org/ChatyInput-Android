@@ -25,7 +25,7 @@ ChatyInput is an open-source voice input app that goes beyond simple speech-to-t
 
 1. **Speak** — Hold the PTT button and speak naturally in any language
 2. **Process** — Your STT model transcribes, then the LLM classifies intent and updates the buffer
-3. **Edit** *(optional)* — Hold the edit button to refine: "change 3 PM to 5 PM" or "rewrite as a formal email"
+3. **Edit** *(optional)* — Say "change 3 PM to 5 PM" using the voice button and the AI detects it as an edit automatically. For more precise control, use the dedicated edit button which uses a specialized prompt focused on editing.
 4. **Send** — Say "send" and the text goes directly into the active app
 
 ## Supported Languages
