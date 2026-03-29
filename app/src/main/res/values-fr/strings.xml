@@ -5,6 +5,7 @@
     <string name="tab_voice">Voix</string>
     <string name="tab_history">Historique</string>
     <string name="tab_dictionary">Dictionnaire</string>
+    <string name="tab_modes">Modes</string>
     <string name="tab_settings">Paramètres</string>
 
     <!-- Voice screen -->
@@ -83,6 +84,49 @@
     <string name="settings_edit_prompt">Prompt de commande d\'édition</string>
     <string name="settings_edit_prompt_desc">Prompt utilisé pour le bouton d\'édition</string>
     <string name="ime_edit">ÉDITER</string>
+
+    <!-- Modes screen -->
+    <string name="mode_auto_switch">Changement auto</string>
+    <string name="mode_auto_switch_desc">Changer automatiquement de mode selon l\'application active</string>
+    <string name="mode_active">Mode actif</string>
+    <string name="mode_default">Par défaut</string>
+    <string name="mode_empty">Aucun mode</string>
+    <string name="mode_built_in">Intégré</string>
+    <string name="mode_app_count">%d applis</string>
+    <string name="mode_create">Créer un mode</string>
+    <string name="mode_edit">Modifier le mode</string>
+    <string name="mode_new">Nouveau mode</string>
+    <string name="mode_delete_title">Supprimer le mode</string>
+    <string name="mode_delete_msg">Voulez-vous vraiment supprimer ce mode ?</string>
+    <string name="mode_prompt_suffix">Suffixe de prompt (ajouté au prompt système)</string>
+    <string name="mode_edit_prompt_suffix">Suffixe de prompt d\'édition (ajouté au prompt d\'édition)</string>
+    <string name="mode_trigger_condition">Quand utiliser ce mode</string>
+    <string name="mode_trigger_condition_hint">Ex : Dans les apps mail ou pour des messages formels</string>
+    <string name="mode_name">Nom</string>
+    <string name="mode_emoji">Émoji</string>
+    <string name="mode_auto">Auto</string>
+    <string name="mode_words_desc">Mots prioritaires lors de la reconnaissance vocale</string>
+    <string name="mode_new_word">Nouveau mot</string>
+    <string name="mode_language">Langue</string>
+    <string name="mode_package_name">Nom du paquet</string>
+    <string name="mode_words_count">%d mots</string>
+    <string name="mode_apps_count">%d applis</string>
+    <string name="mode_custom_words">Mots personnalisés</string>
+    <string name="mode_custom_words_desc">Mots prioritaires lors de la reconnaissance vocale</string>
+    <string name="mode_language_override">Langue prioritaire</string>
+    <string name="mode_language_global">Utiliser le paramètre global</string>
+    <string name="mode_associated_apps">Applications associées</string>
+    <string name="mode_associated_apps_desc">Applications utilisant automatiquement ce mode</string>
+    <string name="mode_no_apps">Aucune application associée</string>
+    <string name="mode_add_app">Ajouter une appli</string>
+    <string name="mode_search_app">Rechercher…</string>
+    <string name="mode_reset_default">Rétablir par défaut</string>
+    <string name="mode_saved">Mode enregistré.</string>
+    <string name="mode_forced">Verrouillé (l\'IA ne peut pas modifier)</string>
+    <string name="mode_llm_switched">L\'IA a changé pour : %s</string>
+
+    <!-- Navigation -->
+    <string name="back_to_exit">Appuyez à nouveau pour quitter</string>
 
     <!-- IME keyboard -->
     <string name="ime_placeholder">Appuyez sur le micro pour enregistrer…</string>

@@ -16,6 +16,8 @@ import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.config.LocaleHelper
 import com.tinybear.chatyinput.model.VoiceIntent
 import com.tinybear.chatyinput.service.AudioCaptureService
+import com.tinybear.chatyinput.service.ModeManager
+import com.tinybear.chatyinput.service.ModeResolver
 import com.tinybear.chatyinput.service.RecordingPipeline
 import com.tinybear.chatyinput.service.VadService
 import kotlinx.coroutines.*
@@ -58,6 +60,10 @@ class ChatyInputIME : InputMethodService(),
     private var isVadListening = mutableStateOf(false)
     private var isVadSpeaking = mutableStateOf(false)
     private var isVadEditMode = mutableStateOf(false) // VAD 编辑模式标记
+    // 当前 Mode 名称（用于 IME 指示器）
+    private var currentModeName = mutableStateOf("")
+    // 可用 Mode 列表（供 IME 下拉选择器）
+    private var availableModes = mutableStateOf<List<Pair<String?, String>>>(emptyList())
 
     // 收集 Pipeline/VAD StateFlow 的协程
     private var collectorJob: Job? = null
@@ -80,7 +86,9 @@ class ChatyInputIME : InputMethodService(),
 
         // 创建 Pipeline 和 VadService（Service 生命周期）
         val config = AppConfig(applicationContext)
-        pipeline = RecordingPipeline(config, applicationContext).also { p ->
+        val modeManager = ModeManager(applicationContext)
+        val modeResolver = ModeResolver(config, modeManager)
+        pipeline = RecordingPipeline(config, applicationContext, modeResolver).also { p ->
             p.onBufferUpdated = { result, newBuffer ->
                 buffer.value = newBuffer
                 when (result.intent) {
@@ -107,6 +115,9 @@ class ChatyInputIME : InputMethodService(),
             }
             p.onSegmentTranscribed = { _ ->
                 // IME 中不单独显示转录结果（空间有限）
+            }
+            p.onModeChanged = { modeName ->
+                currentModeName.value = modeName
             }
         }
 
@@ -184,6 +195,8 @@ class ChatyInputIME : InputMethodService(),
             val vadSpeaking by isVadSpeaking
             val vadEditMode by isVadEditMode
             val holdMode = config.holdToRecord
+            val modeName by currentModeName
+            val modesList by availableModes
 
             KeyboardView(
                 buffer = bufferValue,
@@ -215,18 +228,50 @@ class ChatyInputIME : InputMethodService(),
                     buffer.value = newText
                     pipeline?.buffer = newText
                 },
-                bottomPaddingDp = navBarDp
+                bottomPaddingDp = navBarDp,
+                currentModeName = modeName,
+                availableModes = modesList,
+                onModeSelected = { modeId -> onModeSelected(modeId) }
             )
             } // end ChatyInputTheme
         }
         return composeView
     }
 
-    // 键盘显示时：刷新 VAD 模式配置（不再自动开始监听）
+    // 键盘显示时：刷新 VAD 模式配置，捕获前台应用包名（不再自动开始监听）
     override fun onStartInputView(info: android.view.inputmethod.EditorInfo?, restarting: Boolean) {
         super.onStartInputView(info, restarting)
         val config = AppConfig(applicationContext)
         isVadMode.value = config.recordingMode == "vad"
+        // 捕获前台应用包名，用于 Mode 自动切换
+        val pkg = info?.packageName
+        pipeline?.currentAppPackage = pkg
+        // 更新 Mode 指示器和可用 Mode 列表
+        updateModeState(config, pkg)
+    }
+
+    // 更新 Mode 相关 UI 状态
+    private fun updateModeState(config: AppConfig? = null, pkg: String? = null) {
+        val cfg = config ?: AppConfig(applicationContext)
+        val modeManager = ModeManager(applicationContext)
+        val resolver = ModeResolver(cfg, modeManager)
+        val resolved = resolver.resolveMode(pkg ?: pipeline?.currentAppPackage, pipeline?.llmSuggestedModeId)
+        currentModeName.value = if (resolved.mode != null) {
+            "${resolved.mode.iconEmoji ?: ""} ${resolved.mode.name}".trim()
+        } else ""
+        // 刷新可用 Mode 列表
+        availableModes.value = modeManager.getAllModes().map { mode ->
+            mode.id to "${mode.iconEmoji ?: ""} ${mode.name}".trim()
+        }
+    }
+
+    // IME 内手动切换 Mode
+    private fun onModeSelected(modeId: String?) {
+        val config = AppConfig(applicationContext)
+        config.activeModeId = modeId
+        // 清除 LLM 建议（手动选择优先）
+        pipeline?.llmSuggestedModeId = null
+        updateModeState(config)
     }
 
     // 键盘隐藏时：停止 VAD 监听

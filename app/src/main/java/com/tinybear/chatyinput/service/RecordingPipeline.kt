@@ -22,7 +22,8 @@ data class QueueStatus(
 
 class RecordingPipeline(
     private val config: AppConfig,
-    private val context: Context
+    private val context: Context,
+    private val modeResolver: ModeResolver? = null
 ) {
     companion object {
         private const val TAG = "RecordingPipeline"
@@ -42,6 +43,10 @@ class RecordingPipeline(
     var onError: ((String) -> Unit)? = null
     var onSegmentTranscribed: ((transcript: String) -> Unit)? = null
     var onUndo: ((previousBuffer: String) -> Unit)? = null
+    var onModeChanged: ((modeName: String) -> Unit)? = null
+
+    // LLM 建议的 Mode（会话级，clearBuffer 时重置）
+    var llmSuggestedModeId: String? = null
 
     // Undo stack — 保存缓冲区历史，最多 30 条
     private val undoStack = ArrayDeque<String>()
@@ -50,11 +55,15 @@ class RecordingPipeline(
     var buffer: String = ""
     var currentGroupId: String = UUID.randomUUID().toString()
 
+    // 当前前台应用包名（由 IME 设置）
+    var currentAppPackage: String? = null
+
     private data class PendingSegment(
         val transcript: String,
         val isEdit: Boolean,
         val audioData: ByteArray,
-        val index: Int
+        val index: Int,
+        val appPackage: String? = null
     )
 
     init {
@@ -88,7 +97,7 @@ class RecordingPipeline(
                 }
 
                 // Queue for LLM processing (needs buffer context)
-                llmQueue.send(PendingSegment(transcript, isEdit, audioData, index))
+                llmQueue.send(PendingSegment(transcript, isEdit, audioData, index, currentAppPackage))
             } catch (e: Exception) {
                 Log.e(TAG, "STT failed for segment $index: ${e.message}")
                 processedCount.incrementAndGet()
@@ -105,14 +114,44 @@ class RecordingPipeline(
             for (segment in llmQueue) {
                 try {
                     val llmProvider = config.makeLLMProvider()
-                    val prompt = if (segment.isEdit) config.editSystemPrompt else config.systemPrompt
+                    val basePrompt = if (segment.isEdit) config.editSystemPrompt else config.systemPrompt
+
+                    // Mode 解析（含 LLM 建议和 force 判断）
+                    val resolved = modeResolver?.resolveMode(segment.appPackage, llmSuggestedModeId)
+                        ?: ResolvedMode(null, ModeSource.DEFAULT)
+                    val mode = resolved.mode
+                    val finalPrompt = modeResolver?.buildFinalPrompt(basePrompt, mode, segment.isEdit) ?: basePrompt
+                    val mergedWords = modeResolver?.mergeCustomWords(config.customWords, mode) ?: config.customWords
+
+                    // 生成 Mode 上下文（附加到 user message，让 LLM 判断是否切换）
+                    val modeContext = modeResolver?.buildModeContext(
+                        currentMode = mode,
+                        appPackage = segment.appPackage,
+                        isForced = resolved.isForced,
+                        language = config.resolvedLanguage
+                    ) ?: ""
+
                     val processor = VoiceIntentProcessor(
                         llmProvider = llmProvider,
-                        systemPrompt = prompt,
-                        customWords = config.customWords
+                        systemPrompt = finalPrompt,
+                        customWords = mergedWords
                     )
 
-                    val result = processor.process(segment.transcript, buffer)
+                    val result = processor.process(segment.transcript, buffer, modeContext)
+
+                    // 处理 LLM 建议的 Mode 切换（仅 forced 时不生效）
+                    if (!result.suggestedMode.isNullOrBlank() && !resolved.isForced) {
+                        val modeManager = ModeManager(context)
+                        val suggested = modeManager.getMode(result.suggestedMode)
+                        if (suggested != null) {
+                            llmSuggestedModeId = result.suggestedMode
+                            Log.i(TAG, "LLM suggested mode switch: ${suggested.name}")
+                            withContext(Dispatchers.Main) {
+                                val name = "${suggested.iconEmoji ?: ""} ${suggested.name}".trim()
+                                onModeChanged?.invoke(name)
+                            }
+                        }
+                    }
 
                     // Update buffer based on intent
                     val newBuffer = when (result.intent) {
@@ -203,6 +242,7 @@ class RecordingPipeline(
         }
         buffer = ""
         undoStack.clear()
+        llmSuggestedModeId = null
     }
 
     // 将当前缓冲区压入撤销栈

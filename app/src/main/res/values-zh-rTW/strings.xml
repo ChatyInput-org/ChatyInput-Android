@@ -5,6 +5,7 @@
     <string name="tab_voice">語音</string>
     <string name="tab_history">歷史</string>
     <string name="tab_dictionary">詞典</string>
+    <string name="tab_modes">模式</string>
     <string name="tab_settings">設定</string>
 
     <!-- Voice screen -->
@@ -83,6 +84,49 @@
     <string name="settings_edit_prompt">編輯指令提示詞</string>
     <string name="settings_edit_prompt_desc">編輯按鈕使用的提示詞</string>
     <string name="ime_edit">編輯</string>
+
+    <!-- Modes screen -->
+    <string name="mode_auto_switch">自動切換</string>
+    <string name="mode_auto_switch_desc">根據當前應用自動切換模式</string>
+    <string name="mode_active">當前模式</string>
+    <string name="mode_default">預設</string>
+    <string name="mode_empty">暫無模式</string>
+    <string name="mode_built_in">內建</string>
+    <string name="mode_app_count">%d 個應用</string>
+    <string name="mode_create">建立模式</string>
+    <string name="mode_edit">編輯模式</string>
+    <string name="mode_new">新建模式</string>
+    <string name="mode_delete_title">刪除模式</string>
+    <string name="mode_delete_msg">確定要刪除這個模式嗎？</string>
+    <string name="mode_prompt_suffix">提示詞後綴（附加在系統提示詞後面）</string>
+    <string name="mode_edit_prompt_suffix">編輯提示詞後綴（附加在編輯提示詞後面）</string>
+    <string name="mode_trigger_condition">何時使用此模式</string>
+    <string name="mode_trigger_condition_hint">例如：當在郵件應用中或撰寫正式訊息時使用</string>
+    <string name="mode_name">名稱</string>
+    <string name="mode_emoji">表情符號</string>
+    <string name="mode_auto">自動</string>
+    <string name="mode_words_desc">語音辨識時優先使用的詞彙</string>
+    <string name="mode_new_word">新詞</string>
+    <string name="mode_language">語言</string>
+    <string name="mode_package_name">應用包名</string>
+    <string name="mode_words_count">%d 個詞</string>
+    <string name="mode_apps_count">%d 個應用</string>
+    <string name="mode_custom_words">自訂詞彙</string>
+    <string name="mode_custom_words_desc">語音辨識時優先使用的詞彙</string>
+    <string name="mode_language_override">語言覆蓋</string>
+    <string name="mode_language_global">使用全域設定</string>
+    <string name="mode_associated_apps">關聯應用</string>
+    <string name="mode_associated_apps_desc">自動使用此模式的應用</string>
+    <string name="mode_no_apps">無關聯應用</string>
+    <string name="mode_add_app">新增應用</string>
+    <string name="mode_search_app">搜尋應用…</string>
+    <string name="mode_reset_default">恢復預設</string>
+    <string name="mode_saved">模式已儲存。</string>
+    <string name="mode_forced">已鎖定（AI 無法覆蓋）</string>
+    <string name="mode_llm_switched">AI 切換至：%s</string>
+
+    <!-- Navigation -->
+    <string name="back_to_exit">再按一次返回鍵退出</string>
 
     <!-- IME keyboard -->
     <string name="ime_placeholder">點擊麥克風開始錄音…</string>

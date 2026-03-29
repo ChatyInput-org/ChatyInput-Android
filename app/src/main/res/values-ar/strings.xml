@@ -5,6 +5,7 @@
     <string name="tab_voice">الصوت</string>
     <string name="tab_history">السجل</string>
     <string name="tab_dictionary">القاموس</string>
+    <string name="tab_modes">الأوضاع</string>
     <string name="tab_settings">الإعدادات</string>
 
     <!-- Voice screen -->
@@ -83,6 +84,49 @@
     <string name="settings_edit_prompt">موجّه أمر التحرير</string>
     <string name="settings_edit_prompt_desc">الموجّه المستخدم لزر التحرير</string>
     <string name="ime_edit">تحرير</string>
+
+    <!-- Modes screen -->
+    <string name="mode_auto_switch">التبديل التلقائي</string>
+    <string name="mode_auto_switch_desc">تبديل الأوضاع تلقائياً حسب التطبيق النشط</string>
+    <string name="mode_active">الوضع النشط</string>
+    <string name="mode_default">افتراضي</string>
+    <string name="mode_empty">لا توجد أوضاع</string>
+    <string name="mode_built_in">مدمج</string>
+    <string name="mode_app_count">%d تطبيقات</string>
+    <string name="mode_create">إنشاء وضع</string>
+    <string name="mode_edit">تعديل الوضع</string>
+    <string name="mode_new">وضع جديد</string>
+    <string name="mode_delete_title">حذف الوضع</string>
+    <string name="mode_delete_msg">هل أنت متأكد أنك تريد حذف هذا الوضع؟</string>
+    <string name="mode_prompt_suffix">لاحقة الموجه (تُضاف إلى موجه النظام)</string>
+    <string name="mode_edit_prompt_suffix">لاحقة موجه التحرير (تُضاف إلى موجه التحرير)</string>
+    <string name="mode_trigger_condition">متى تستخدم هذا الوضع</string>
+    <string name="mode_trigger_condition_hint">مثال: في تطبيقات البريد أو عند كتابة رسائل رسمية</string>
+    <string name="mode_name">الاسم</string>
+    <string name="mode_emoji">إيموجي</string>
+    <string name="mode_auto">تلقائي</string>
+    <string name="mode_words_desc">كلمات مفضلة أثناء التعرف على الصوت</string>
+    <string name="mode_new_word">كلمة جديدة</string>
+    <string name="mode_language">اللغة</string>
+    <string name="mode_package_name">اسم الحزمة</string>
+    <string name="mode_words_count">%d كلمات</string>
+    <string name="mode_apps_count">%d تطبيقات</string>
+    <string name="mode_custom_words">كلمات مخصصة</string>
+    <string name="mode_custom_words_desc">كلمات مفضلة أثناء التعرف على الصوت</string>
+    <string name="mode_language_override">تجاوز اللغة</string>
+    <string name="mode_language_global">استخدام الإعداد العام</string>
+    <string name="mode_associated_apps">التطبيقات المرتبطة</string>
+    <string name="mode_associated_apps_desc">التطبيقات التي ستستخدم هذا الوضع تلقائياً</string>
+    <string name="mode_no_apps">لا توجد تطبيقات مرتبطة</string>
+    <string name="mode_add_app">إضافة تطبيق</string>
+    <string name="mode_search_app">بحث عن تطبيق…</string>
+    <string name="mode_reset_default">إعادة تعيين للافتراضي</string>
+    <string name="mode_saved">تم حفظ الوضع.</string>
+    <string name="mode_forced">مقفل (الذكاء الاصطناعي لا يمكنه التغيير)</string>
+    <string name="mode_llm_switched">الذكاء الاصطناعي غيّر إلى: %s</string>
+
+    <!-- Navigation -->
+    <string name="back_to_exit">اضغط مرة أخرى للخروج</string>
 
     <!-- IME keyboard -->
     <string name="ime_placeholder">انقر على الميكروفون للتسجيل…</string>

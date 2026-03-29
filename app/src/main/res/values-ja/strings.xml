@@ -5,6 +5,7 @@
     <string name="tab_voice">音声</string>
     <string name="tab_history">履歴</string>
     <string name="tab_dictionary">辞書</string>
+    <string name="tab_modes">モード</string>
     <string name="tab_settings">設定</string>
 
     <!-- Voice screen -->
@@ -83,6 +84,49 @@
     <string name="settings_edit_prompt">編集コマンドプロンプト</string>
     <string name="settings_edit_prompt_desc">編集ボタンで使用されるプロンプト</string>
     <string name="ime_edit">編集</string>
+
+    <!-- Modes screen -->
+    <string name="mode_auto_switch">自動切替</string>
+    <string name="mode_auto_switch_desc">アクティブなアプリに応じてモードを自動切替</string>
+    <string name="mode_active">有効なモード</string>
+    <string name="mode_default">デフォルト</string>
+    <string name="mode_empty">モードがありません</string>
+    <string name="mode_built_in">内蔵</string>
+    <string name="mode_app_count">%d アプリ</string>
+    <string name="mode_create">モード作成</string>
+    <string name="mode_edit">モード編集</string>
+    <string name="mode_new">新規モード</string>
+    <string name="mode_delete_title">モード削除</string>
+    <string name="mode_delete_msg">このモードを削除してよろしいですか？</string>
+    <string name="mode_prompt_suffix">プロンプト追加（システムプロンプトに追加）</string>
+    <string name="mode_edit_prompt_suffix">編集プロンプト追加（編集プロンプトに追加）</string>
+    <string name="mode_trigger_condition">このモードを使用する条件</string>
+    <string name="mode_trigger_condition_hint">例：メールアプリ使用時やフォーマルなメッセージ作成時</string>
+    <string name="mode_name">名前</string>
+    <string name="mode_emoji">絵文字</string>
+    <string name="mode_auto">自動</string>
+    <string name="mode_words_desc">音声認識で優先される単語</string>
+    <string name="mode_new_word">新しい単語</string>
+    <string name="mode_language">言語</string>
+    <string name="mode_package_name">パッケージ名</string>
+    <string name="mode_words_count">%d 単語</string>
+    <string name="mode_apps_count">%d アプリ</string>
+    <string name="mode_custom_words">カスタム単語</string>
+    <string name="mode_custom_words_desc">音声認識で優先される単語</string>
+    <string name="mode_language_override">言語オーバーライド</string>
+    <string name="mode_language_global">グローバル設定を使用</string>
+    <string name="mode_associated_apps">関連アプリ</string>
+    <string name="mode_associated_apps_desc">このモードを自動使用するアプリ</string>
+    <string name="mode_no_apps">関連アプリなし</string>
+    <string name="mode_add_app">アプリを追加</string>
+    <string name="mode_search_app">アプリを検索…</string>
+    <string name="mode_reset_default">デフォルトに戻す</string>
+    <string name="mode_saved">モードを保存しました。</string>
+    <string name="mode_forced">ロック済み（AIは変更不可）</string>
+    <string name="mode_llm_switched">AIがモードを切替: %s</string>
+
+    <!-- Navigation -->
+    <string name="back_to_exit">もう一度押すと終了します</string>
 
     <!-- IME keyboard -->
     <string name="ime_placeholder">マイクをタップして録音…</string>

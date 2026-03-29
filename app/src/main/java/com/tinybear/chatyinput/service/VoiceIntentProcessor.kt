@@ -25,7 +25,7 @@ class VoiceIntentProcessor(
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    suspend fun process(newSegment: String, currentBuffer: String): ProcessingResult {
+    suspend fun process(newSegment: String, currentBuffer: String, modeContext: String = ""): ProcessingResult {
         val userMessage = buildString {
             append("当前缓冲区内容：")
             if (currentBuffer.isEmpty()) append("（空）") else append(currentBuffer)
@@ -34,6 +34,10 @@ class VoiceIntentProcessor(
             if (customWords.isNotEmpty()) {
                 append("\n\n用户常用词（遇到发音相似的词请优先使用这些）：")
                 append(customWords.joinToString("、"))
+            }
+            if (modeContext.isNotBlank()) {
+                append("\n\n")
+                append(modeContext)
             }
         }
 
@@ -95,10 +99,13 @@ class VoiceIntentProcessor(
             else -> throw ProcessingError.InvalidJSON(text)
         }
 
+        val modeMatch = Regex(""""suggested_mode"\s*:\s*"([^"]+)"""").find(text)
+
         return ProcessingResult(
             intent = intent,
             resultText = resultText,
-            explanation = explainMatch?.groupValues?.get(1)
+            explanation = explainMatch?.groupValues?.get(1),
+            suggestedMode = modeMatch?.groupValues?.get(1)
         )
     }
 }

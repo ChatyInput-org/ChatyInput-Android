@@ -9,6 +9,7 @@ import kotlinx.coroutines.delay
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.*
@@ -54,7 +55,10 @@ fun KeyboardView(
     onDeleteTarget: () -> Unit = {},
     onEnter: () -> Unit = {},
     onBufferChange: (String) -> Unit = {},
-    bottomPaddingDp: Int = 0
+    bottomPaddingDp: Int = 0,
+    currentModeName: String = "",
+    availableModes: List<Pair<String?, String>> = emptyList(),
+    onModeSelected: (String?) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
     val totalHeight = if (expanded) (260 + bottomPaddingDp) else (160 + bottomPaddingDp)
@@ -198,28 +202,88 @@ fun KeyboardView(
                 ) { Text("\uD83C\uDF10", fontSize = 14.sp) }
             }
 
-            // 中间：VAD 模式显示语音/编辑切换按钮，PTT/Toggle 模式显示录音按钮
-            if (isVadMode) {
-                // VAD 模式：语音按钮(3/4) + 编辑按钮(1/4)，手动开始/停止
+            // Mode 选择器状态（共用）
+            var showModeMenu by remember { mutableStateOf(false) }
+
+            // 内联 Mode 选择面板（替代 DropdownMenu，避免 IME 弹跳）
+            if (showModeMenu) {
+                Row(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Auto 选项
+                    Surface(
+                        onClick = { onModeSelected(null); showModeMenu = false },
+                        shape = RoundedCornerShape(8.dp),
+                        color = if (currentModeName.isEmpty()) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.surfaceVariant,
+                        modifier = Modifier.fillMaxHeight().padding(vertical = 2.dp)
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 12.dp)) {
+                            Text(stringResource(R.string.mode_auto), fontSize = 13.sp,
+                                color = if (currentModeName.isEmpty()) Color.White
+                                        else MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                    // 各 Mode 选项
+                    availableModes.forEach { (id, displayName) ->
+                        Surface(
+                            onClick = { onModeSelected(id); showModeMenu = false },
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.fillMaxHeight().padding(vertical = 2.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(horizontal = 10.dp)) {
+                                Text("\uD83D\uDD12 $displayName", fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1)
+                            }
+                        }
+                    }
+                }
+            }
+            // 正常按钮区
+            else if (isVadMode) {
+                // VAD 模式：Mode(1/4) + 语音按钮(2/4) + 编辑按钮(1/4)
                 Row(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    // 语音 VAD 按钮 (3/4)
+                    // Mode 按钮 (1/4)
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .pointerInput(Unit) {
+                                detectTapGestures(onPress = { tryAwaitRelease(); showModeMenu = true })
+                            },
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.tertiary
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Text(
+                                if (currentModeName.isEmpty()) stringResource(R.string.mode_auto)
+                                else currentModeName.take(2).trim(),
+                                fontSize = 14.sp,
+                                color = Color.White, maxLines = 1
+                            )
+                        }
+                    }
+
+                    // 语音 VAD 按钮 (2/4)
                     val isVoiceActive = isVadListening && !isVadEditMode
                     val voiceColor = if (isVoiceActive) Color.Red
                                      else MaterialTheme.colorScheme.primary
                     Surface(
                         modifier = Modifier
-                            .weight(3f)
+                            .weight(2f)
                             .fillMaxHeight()
                             .pointerInput(Unit) {
-                                detectTapGestures(
-                                    onPress = {
-                                        tryAwaitRelease()
-                                        onToggleVadVoice()
-                                    }
-                                )
+                                detectTapGestures(onPress = { tryAwaitRelease(); onToggleVadVoice() })
                             },
                         shape = RoundedCornerShape(10.dp),
                         color = voiceColor
@@ -232,21 +296,15 @@ fun KeyboardView(
                                 if (isVoiceActive) {
                                     CircularProgressIndicator(
                                         modifier = Modifier.size(20.dp),
-                                        color = Color.White,
-                                        strokeWidth = 2.dp
+                                        color = Color.White, strokeWidth = 2.dp
                                     )
                                     Text(
                                         if (isVadSpeaking) stringResource(R.string.vad_speaking)
                                         else stringResource(R.string.vad_listening),
-                                        fontSize = 16.sp,
-                                        color = Color.White
+                                        fontSize = 14.sp, color = Color.White
                                     )
                                 } else {
-                                    Text(
-                                        "\uD83C\uDFA4 $recText",
-                                        fontSize = 20.sp,
-                                        color = Color.White
-                                    )
+                                    Text("\uD83C\uDFA4 $recText", fontSize = 18.sp, color = Color.White)
                                 }
                             }
                         }
@@ -262,12 +320,7 @@ fun KeyboardView(
                             .fillMaxHeight()
                             .pointerInput(buffer) {
                                 if (buffer.isEmpty() && !isEditActive) return@pointerInput
-                                detectTapGestures(
-                                    onPress = {
-                                        tryAwaitRelease()
-                                        onToggleVadEdit()
-                                    }
-                                )
+                                detectTapGestures(onPress = { tryAwaitRelease(); onToggleVadEdit() })
                             },
                         shape = RoundedCornerShape(10.dp),
                         color = if (buffer.isEmpty() && !isEditActive) editVadColor.copy(alpha = 0.3f)
@@ -277,31 +330,47 @@ fun KeyboardView(
                             if (isEditActive) {
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(18.dp),
-                                    color = Color.White,
-                                    strokeWidth = 2.dp
+                                    color = Color.White, strokeWidth = 2.dp
                                 )
                             } else {
-                                Text(
-                                    "\u270F\uFE0F",
-                                    fontSize = 18.sp,
-                                    color = Color.White
-                                )
+                                Text("\u270F\uFE0F", fontSize = 18.sp, color = Color.White)
                             }
                         }
                     }
                 }
             } else {
-                // PTT / Toggle 模式：PTT 大按钮(3/4) + 编辑按钮(1/4)
+                // PTT / Toggle 模式：Mode(1/4) + PTT(2/4) + Edit(1/4)
                 Row(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    // PTT 大按钮 (3/4) — 不再因 isProcessing 而禁用
+                    // Mode 按钮 (1/4)
+                    Surface(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .pointerInput(Unit) {
+                                detectTapGestures(onPress = { tryAwaitRelease(); showModeMenu = true })
+                            },
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.tertiary
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            Text(
+                                if (currentModeName.isEmpty()) stringResource(R.string.mode_auto)
+                                else currentModeName.take(2).trim(),
+                                fontSize = 14.sp,
+                                color = Color.White, maxLines = 1
+                            )
+                        }
+                    }
+
+                    // PTT 大按钮 (2/4)
                     val pttColor = if (isRecording && !isEditMode) Color.Red
                                    else MaterialTheme.colorScheme.primary
                     Surface(
                         modifier = Modifier
-                            .weight(3f)
+                            .weight(2f)
                             .fillMaxHeight()
                             .pointerInput(holdToRecord) {
                                 detectTapGestures(
@@ -323,13 +392,12 @@ fun KeyboardView(
                         Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                             Text(
                                 if (isRecording && !isEditMode) "\u25A0 $stopText" else "\uD83C\uDFA4 $recText",
-                                fontSize = 20.sp,
-                                color = Color.White
+                                fontSize = 18.sp, color = Color.White
                             )
                         }
                     }
 
-                    // 编辑按钮 (1/4) — 不再因 isProcessing 而禁用
+                    // 编辑按钮 (1/4)
                     val editColor = if (isRecording && isEditMode) Color.Red
                                     else MaterialTheme.colorScheme.secondary
                     Surface(

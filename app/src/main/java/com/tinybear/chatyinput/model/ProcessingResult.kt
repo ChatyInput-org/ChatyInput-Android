@@ -7,5 +7,6 @@ import kotlinx.serialization.Serializable
 data class ProcessingResult(
     val intent: VoiceIntent,
     @SerialName("result_text") val resultText: String,
-    val explanation: String? = null
+    val explanation: String? = null,
+    @SerialName("suggested_mode") val suggestedMode: String? = null
 )

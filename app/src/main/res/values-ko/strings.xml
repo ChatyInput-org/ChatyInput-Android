@@ -5,6 +5,7 @@
     <string name="tab_voice">음성</string>
     <string name="tab_history">기록</string>
     <string name="tab_dictionary">사전</string>
+    <string name="tab_modes">모드</string>
     <string name="tab_settings">설정</string>
 
     <!-- Voice screen -->
@@ -83,6 +84,49 @@
     <string name="settings_edit_prompt">편집 명령 프롬프트</string>
     <string name="settings_edit_prompt_desc">편집 버튼에 사용되는 프롬프트</string>
     <string name="ime_edit">편집</string>
+
+    <!-- Modes screen -->
+    <string name="mode_auto_switch">자동 전환</string>
+    <string name="mode_auto_switch_desc">활성 앱에 따라 모드를 자동 전환</string>
+    <string name="mode_active">활성 모드</string>
+    <string name="mode_default">기본</string>
+    <string name="mode_empty">모드 없음</string>
+    <string name="mode_built_in">내장</string>
+    <string name="mode_app_count">%d개 앱</string>
+    <string name="mode_create">모드 만들기</string>
+    <string name="mode_edit">모드 편집</string>
+    <string name="mode_new">새 모드</string>
+    <string name="mode_delete_title">모드 삭제</string>
+    <string name="mode_delete_msg">이 모드를 삭제하시겠습니까?</string>
+    <string name="mode_prompt_suffix">프롬프트 접미사 (시스템 프롬프트에 추가)</string>
+    <string name="mode_edit_prompt_suffix">편집 프롬프트 접미사 (편집 프롬프트에 추가)</string>
+    <string name="mode_trigger_condition">이 모드를 사용할 조건</string>
+    <string name="mode_trigger_condition_hint">예: 이메일 앱에서 또는 공식 메시지 작성 시</string>
+    <string name="mode_name">이름</string>
+    <string name="mode_emoji">이모지</string>
+    <string name="mode_auto">자동</string>
+    <string name="mode_words_desc">음성 인식 시 우선 사용되는 단어</string>
+    <string name="mode_new_word">새 단어</string>
+    <string name="mode_language">언어</string>
+    <string name="mode_package_name">패키지 이름</string>
+    <string name="mode_words_count">%d개 단어</string>
+    <string name="mode_apps_count">%d개 앱</string>
+    <string name="mode_custom_words">사용자 정의 단어</string>
+    <string name="mode_custom_words_desc">음성 인식 시 우선 사용되는 단어</string>
+    <string name="mode_language_override">언어 재정의</string>
+    <string name="mode_language_global">전역 설정 사용</string>
+    <string name="mode_associated_apps">연결된 앱</string>
+    <string name="mode_associated_apps_desc">이 모드를 자동으로 사용하는 앱</string>
+    <string name="mode_no_apps">연결된 앱 없음</string>
+    <string name="mode_add_app">앱 추가</string>
+    <string name="mode_search_app">앱 검색…</string>
+    <string name="mode_reset_default">기본값으로 복원</string>
+    <string name="mode_saved">모드가 저장되었습니다.</string>
+    <string name="mode_forced">잠금 (AI가 변경 불가)</string>
+    <string name="mode_llm_switched">AI가 모드 전환: %s</string>
+
+    <!-- Navigation -->
+    <string name="back_to_exit">한 번 더 누르면 종료됩니다</string>
 
     <!-- IME keyboard -->
     <string name="ime_placeholder">마이크를 탭하여 녹음…</string>

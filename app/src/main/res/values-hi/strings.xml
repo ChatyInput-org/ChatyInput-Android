@@ -5,6 +5,7 @@
     <string name="tab_voice">आवाज़</string>
     <string name="tab_history">इतिहास</string>
     <string name="tab_dictionary">शब्दकोश</string>
+    <string name="tab_modes">मोड</string>
     <string name="tab_settings">सेटिंग्स</string>
 
     <!-- Voice screen -->
@@ -83,6 +84,49 @@
     <string name="settings_edit_prompt">एडिट कमांड प्रॉम्प्ट</string>
     <string name="settings_edit_prompt_desc">एडिट बटन के लिए उपयोग किया जाने वाला प्रॉम्प्ट</string>
     <string name="ime_edit">एडिट</string>
+
+    <!-- Modes screen -->
+    <string name="mode_auto_switch">ऑटो-स्विच</string>
+    <string name="mode_auto_switch_desc">सक्रिय ऐप के आधार पर स्वचालित रूप से मोड बदलें</string>
+    <string name="mode_active">सक्रिय मोड</string>
+    <string name="mode_default">डिफ़ॉल्ट</string>
+    <string name="mode_empty">कोई मोड नहीं</string>
+    <string name="mode_built_in">अंतर्निहित</string>
+    <string name="mode_app_count">%d ऐप्स</string>
+    <string name="mode_create">मोड बनाएं</string>
+    <string name="mode_edit">मोड संपादित करें</string>
+    <string name="mode_new">नया मोड</string>
+    <string name="mode_delete_title">मोड हटाएं</string>
+    <string name="mode_delete_msg">क्या आप वाकई इस मोड को हटाना चाहते हैं?</string>
+    <string name="mode_prompt_suffix">प्रॉम्प्ट प्रत्यय (सिस्टम प्रॉम्प्ट में जोड़ा जाता है)</string>
+    <string name="mode_edit_prompt_suffix">संपादन प्रॉम्प्ट प्रत्यय (संपादन प्रॉम्प्ट में जोड़ा जाता है)</string>
+    <string name="mode_trigger_condition">इस मोड का उपयोग कब करें</string>
+    <string name="mode_trigger_condition_hint">उदा: ईमेल ऐप में या औपचारिक संदेश लिखते समय</string>
+    <string name="mode_name">नाम</string>
+    <string name="mode_emoji">इमोजी</string>
+    <string name="mode_auto">ऑटो</string>
+    <string name="mode_words_desc">वॉइस रिकग्निशन में प्राथमिकता वाले शब्द</string>
+    <string name="mode_new_word">नया शब्द</string>
+    <string name="mode_language">भाषा</string>
+    <string name="mode_package_name">पैकेज नाम</string>
+    <string name="mode_words_count">%d शब्द</string>
+    <string name="mode_apps_count">%d ऐप्स</string>
+    <string name="mode_custom_words">कस्टम शब्द</string>
+    <string name="mode_custom_words_desc">वॉइस रिकग्निशन में प्राथमिकता वाले शब्द</string>
+    <string name="mode_language_override">भाषा ओवरराइड</string>
+    <string name="mode_language_global">वैश्विक सेटिंग का उपयोग करें</string>
+    <string name="mode_associated_apps">संबद्ध ऐप्स</string>
+    <string name="mode_associated_apps_desc">इस मोड का स्वचालित रूप से उपयोग करने वाले ऐप्स</string>
+    <string name="mode_no_apps">कोई संबद्ध ऐप नहीं</string>
+    <string name="mode_add_app">ऐप जोड़ें</string>
+    <string name="mode_search_app">ऐप खोजें…</string>
+    <string name="mode_reset_default">डिफ़ॉल्ट पर रीसेट करें</string>
+    <string name="mode_saved">मोड सहेजा गया।</string>
+    <string name="mode_forced">लॉक (AI बदल नहीं सकता)</string>
+    <string name="mode_llm_switched">AI ने मोड बदला: %s</string>
+
+    <!-- Navigation -->
+    <string name="back_to_exit">बाहर निकलने के लिए फिर से दबाएं</string>
 
     <!-- IME keyboard -->
     <string name="ime_placeholder">रिकॉर्ड करने के लिए माइक टैप करें…</string>

@@ -127,6 +127,15 @@ class AppConfig(context: Context) {
         prefs.edit().remove("system_prompt").remove("edit_system_prompt").apply()
     }
 
+    // Mode 设置
+    var activeModeId: String?
+        get() = prefs.getString("active_mode_id", null)
+        set(v) = prefs.edit().putString("active_mode_id", v ?: "").apply()
+
+    var autoModeEnabled: Boolean
+        get() = prefs.getBoolean("auto_mode_enabled", false)
+        set(v) = prefs.edit().putBoolean("auto_mode_enabled", v).apply()
+
     // Whisper 语言代码（根据 app 语言设置）
     private val whisperLanguage: String get() = when (resolvedLanguage) {
         AppLanguage.ZH_CN, AppLanguage.ZH_TW -> "zh"
