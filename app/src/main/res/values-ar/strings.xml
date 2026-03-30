@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">التبديل التلقائي</string>
-    <string name="mode_auto_switch_desc">تبديل الأوضاع تلقائياً حسب التطبيق النشط</string>
+    <string name="mode_auto_switch_desc">الذكاء الاصطناعي يبدل الأوضاع تلقائياً حسب التطبيق والسياق</string>
     <string name="mode_active">الوضع النشط</string>
     <string name="mode_default">افتراضي</string>
     <string name="mode_empty">لا توجد أوضاع</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">تم حفظ الوضع.</string>
     <string name="mode_forced">مقفل (الذكاء الاصطناعي لا يمكنه التغيير)</string>
     <string name="mode_llm_switched">الذكاء الاصطناعي غيّر إلى: %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">سياق الموقع</string>
+    <string name="mode_location_context_desc">تضمين موقع GPS في سياق الذكاء الاصطناعي لتبديل الأوضاع</string>
+    <string name="mode_location_language">لغة حسب الموقع</string>
+    <string name="mode_location_language_desc">قد يغير الذكاء الاصطناعي لغة الإخراج بناءً على موقعك</string>
+    <string name="mode_location_triggers">محفزات الموقع</string>
+    <string name="mode_location_triggers_desc">مواقع تُفعّل هذا الوضع عند الاقتراب منها</string>
+    <string name="mode_add_location">إضافة موقع</string>
+    <string name="mode_location_name">اسم الموقع</string>
+    <string name="mode_location_lat">خط العرض</string>
+    <string name="mode_location_lon">خط الطول</string>
+    <string name="mode_location_radius">النطاق: %dm</string>
+    <string name="mode_no_locations">لا توجد محفزات موقع</string>
+    <string name="mode_use_current_location">استخدام الموقع الحالي</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">اضغط مرة أخرى للخروج</string>

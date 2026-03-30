@@ -3,6 +3,7 @@ package com.tinybear.chatyinput.service
 import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.config.AppLanguage
 import com.tinybear.chatyinput.config.ModeSelectionPrompts
+import com.tinybear.chatyinput.model.LocationData
 import com.tinybear.chatyinput.model.Mode
 
 enum class ModeSource { MANUAL, LLM_SUGGESTION, APP_MAPPING, DEFAULT }
@@ -82,7 +83,9 @@ class ModeResolver(
         currentMode: Mode?,
         appPackage: String?,
         isForced: Boolean,
-        language: AppLanguage
+        language: AppLanguage,
+        location: LocationData? = null,
+        locationProvider: LocationProvider? = null
     ): String {
         val modes = modeManager.getAllModes()
         if (modes.isEmpty()) return ""
@@ -93,17 +96,38 @@ class ModeResolver(
             return ModeSelectionPrompts.getLockedContext(language, currentName, appName)
         }
 
-        // 构建每个 Mode 的描述（含 triggerCondition）
+        // 构建每个 Mode 的描述（含 triggerCondition + 位置距离）
         val modeDescriptions = modes.joinToString("\n") { mode ->
             val condition = if (mode.triggerCondition.isNotBlank()) " — ${mode.triggerCondition}" else ""
-            "- ${mode.id}: ${mode.name}$condition"
+            val locationInfo = if (location != null && locationProvider != null && mode.locationTriggers.isNotEmpty()) {
+                val nearest = mode.locationTriggers.minByOrNull { trigger ->
+                    locationProvider.distanceTo(location.latitude, location.longitude, trigger.latitude, trigger.longitude)
+                }
+                if (nearest != null) {
+                    val dist = locationProvider.distanceTo(location.latitude, location.longitude, nearest.latitude, nearest.longitude)
+                    if (dist <= nearest.radiusMeters) {
+                        " [NEARBY: \"${nearest.name}\", ${dist.toInt()}m]"
+                    } else {
+                        val distKm = String.format("%.1f", dist / 1000.0)
+                        " [\"${nearest.name}\", ${distKm}km away]"
+                    }
+                } else ""
+            } else ""
+            "- ${mode.id}: ${mode.name}$condition$locationInfo"
         }
 
         val currentName = currentMode?.name ?: "Default"
         val appName = appPackage ?: "unknown"
 
-        return ModeSelectionPrompts.getContextWithConditions(
+        val baseContext = ModeSelectionPrompts.getContextWithConditions(
             language, modeDescriptions, currentName, appName
         )
+
+        // 附加位置信息
+        val locationContext = if (location != null) {
+            "\nCurrent location: lat=${String.format("%.4f", location.latitude)}, lon=${String.format("%.4f", location.longitude)}"
+        } else ""
+
+        return baseContext + locationContext
     }
 }

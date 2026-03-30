@@ -61,6 +61,7 @@ fun KeyboardView(
     onModeSelected: (String?) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val buttonHeight = 80 // 按钮区固定高度
     val totalHeight = if (expanded) (260 + bottomPaddingDp) else (160 + bottomPaddingDp)
 
     // 用 TextFieldValue 跟踪光标位置和选区
@@ -86,9 +87,14 @@ fun KeyboardView(
             .animateContentSize()
             .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 4.dp)
-            .padding(top = 3.dp, bottom = bottomPaddingDp.dp),
+            .padding(top = 3.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
+        // 上半区：信息区（弹性高度，不挤压按钮区）
+        Column(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
         // 错误信息
         if (errorMessage != null) {
             Text(
@@ -104,11 +110,11 @@ fun KeyboardView(
             )
         }
 
-        // 文本预览
+        // 文本预览（弹性填充剩余空间）
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 24.dp, max = if (expanded) 140.dp else 36.dp)
+                .weight(1f)
                 .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
         ) {
             BasicTextField(
@@ -137,25 +143,28 @@ fun KeyboardView(
             )
         }
 
-        // AI 处理说明
-        if (lastAction.isNotEmpty()) {
-            Text(
-                text = "\u2192 $lastAction",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp)
-            )
-        }
-
-        // 队列状态
-        if (queueStatusText.isNotEmpty()) {
+        // AI 处理说明 + 队列状态（同一行）
+        if (lastAction.isNotEmpty() || queueStatusText.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                if (lastAction.isNotEmpty()) {
+                    Text(
+                        text = "\u2192 $lastAction",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+                if (queueStatusText.isNotEmpty()) {
+                    Spacer(modifier = Modifier.width(4.dp))
                     CircularProgressIndicator(
-                        modifier = Modifier.size(12.dp),
+                        modifier = Modifier.size(10.dp),
                         strokeWidth = 1.5.dp,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -169,9 +178,11 @@ fun KeyboardView(
             }
         }
 
-        // 主操作区：左列 | PTT(大) | 右列
+        } // end 信息区 Column
+
+        // 主操作区：左列 | Mode | PTT | Edit | 右列（固定高度）
         Row(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            modifier = Modifier.fillMaxWidth().height(buttonHeight.dp),
             horizontalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             // 左列：展开 + Clear + 切换键盘

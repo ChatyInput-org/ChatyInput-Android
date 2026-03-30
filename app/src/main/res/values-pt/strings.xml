@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">Troca automática</string>
-    <string name="mode_auto_switch_desc">Trocar automaticamente de modo com base no aplicativo ativo</string>
+    <string name="mode_auto_switch_desc">A IA troca automaticamente de modo com base no aplicativo e no contexto</string>
     <string name="mode_active">Modo ativo</string>
     <string name="mode_default">Padrão</string>
     <string name="mode_empty">Nenhum modo</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">Modo salvo.</string>
     <string name="mode_forced">Bloqueado (IA não pode alterar)</string>
     <string name="mode_llm_switched">IA mudou para: %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">Contexto de localização</string>
+    <string name="mode_location_context_desc">Incluir localização GPS no contexto da IA para troca de modo</string>
+    <string name="mode_location_language">Idioma por localização</string>
+    <string name="mode_location_language_desc">A IA pode mudar o idioma de saída com base na sua localização</string>
+    <string name="mode_location_triggers">Gatilhos de localização</string>
+    <string name="mode_location_triggers_desc">Locais que ativam este modo quando você está por perto</string>
+    <string name="mode_add_location">Adicionar local</string>
+    <string name="mode_location_name">Nome do local</string>
+    <string name="mode_location_lat">Latitude</string>
+    <string name="mode_location_lon">Longitude</string>
+    <string name="mode_location_radius">Raio: %dm</string>
+    <string name="mode_no_locations">Sem gatilhos de localização</string>
+    <string name="mode_use_current_location">Usar localização atual</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">Pressione voltar novamente para sair</string>

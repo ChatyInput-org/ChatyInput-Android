@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">Changement auto</string>
-    <string name="mode_auto_switch_desc">Changer automatiquement de mode selon l\'application active</string>
+    <string name="mode_auto_switch_desc">L\'IA change automatiquement de mode selon l\'application et le contexte</string>
     <string name="mode_active">Mode actif</string>
     <string name="mode_default">Par défaut</string>
     <string name="mode_empty">Aucun mode</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">Mode enregistré.</string>
     <string name="mode_forced">Verrouillé (l\'IA ne peut pas modifier)</string>
     <string name="mode_llm_switched">L\'IA a changé pour : %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">Contexte de localisation</string>
+    <string name="mode_location_context_desc">Inclure la position GPS dans le contexte IA pour le changement de mode</string>
+    <string name="mode_location_language">Langue par localisation</string>
+    <string name="mode_location_language_desc">L\'IA peut changer la langue de sortie selon votre position</string>
+    <string name="mode_location_triggers">Déclencheurs de localisation</string>
+    <string name="mode_location_triggers_desc">Lieux qui déclenchent ce mode quand vous êtes à proximité</string>
+    <string name="mode_add_location">Ajouter un lieu</string>
+    <string name="mode_location_name">Nom du lieu</string>
+    <string name="mode_location_lat">Latitude</string>
+    <string name="mode_location_lon">Longitude</string>
+    <string name="mode_location_radius">Rayon : %dm</string>
+    <string name="mode_no_locations">Aucun déclencheur de localisation</string>
+    <string name="mode_use_current_location">Utiliser la position actuelle</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">Appuyez à nouveau pour quitter</string>

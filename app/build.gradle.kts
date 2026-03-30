@@ -60,4 +60,7 @@ dependencies {
 
     // ONNX Runtime for Silero VAD
     implementation("com.microsoft.onnxruntime:onnxruntime-android:1.17.0")
+
+    // Google Play Services Location (GPS for Mode switching)
+    implementation("com.google.android.gms:play-services-location:21.1.0")
 }

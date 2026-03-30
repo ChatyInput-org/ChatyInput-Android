@@ -10,6 +10,23 @@ data class AppModeMapping(
     val forced: Boolean = false
 )
 
+// 位置触发器
+@Serializable
+data class LocationTrigger(
+    val name: String,
+    val latitude: Double,
+    val longitude: Double,
+    @SerialName("radius_meters") val radiusMeters: Double = 200.0
+)
+
+// 位置数据（运行时，不序列化）
+data class LocationData(
+    val latitude: Double,
+    val longitude: Double,
+    val accuracy: Float,
+    val timestamp: Long
+)
+
 @Serializable
 data class Mode(
     val id: String,
@@ -18,6 +35,7 @@ data class Mode(
     @SerialName("prompt_suffix") val promptSuffix: String = "",
     @SerialName("edit_prompt_suffix") val editPromptSuffix: String = "",
     @SerialName("trigger_condition") val triggerCondition: String = "",
+    @SerialName("location_triggers") val locationTriggers: List<LocationTrigger> = emptyList(),
     @SerialName("custom_words") val customWords: List<String> = emptyList(),
     val language: String? = null,
     @SerialName("is_built_in") val isBuiltIn: Boolean = false,

@@ -1,11 +1,16 @@
 package com.tinybear.chatyinput.ui
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
 import android.graphics.drawable.Drawable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -28,9 +33,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Slider
+import androidx.compose.ui.text.input.KeyboardType
 import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.config.AppLanguage
 import com.tinybear.chatyinput.model.AppModeMapping
+import com.tinybear.chatyinput.model.LocationTrigger
 import com.tinybear.chatyinput.model.Mode
 import com.tinybear.chatyinput.service.ModeManager
 
@@ -64,6 +73,12 @@ fun ModeEditorScreen(
             }
         )
     }
+    var locationTriggers by remember { mutableStateOf(mode.locationTriggers) }
+    var showAddLocation by remember { mutableStateOf(false) }
+    var newLocName by remember { mutableStateOf("") }
+    var newLocLat by remember { mutableStateOf("") }
+    var newLocLon by remember { mutableStateOf("") }
+    var newLocRadius by remember { mutableStateOf(200f) }
     var showAppPicker by remember { mutableStateOf(false) }
     var languageExpanded by remember { mutableStateOf(false) }
 
@@ -368,6 +383,208 @@ fun ModeEditorScreen(
                 )
             }
 
+            // Location Triggers 区域
+            Text(
+                stringResource(R.string.mode_location_triggers),
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                stringResource(R.string.mode_location_triggers_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            // 添加 Location 按钮
+            OutlinedButton(
+                onClick = { showAddLocation = !showAddLocation },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.mode_add_location))
+            }
+
+            // 添加 Location 表单
+            if (showAddLocation) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    tonalElevation = 1.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = newLocName,
+                            onValueChange = { newLocName = it },
+                            label = { Text(stringResource(R.string.mode_location_name)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true
+                        )
+                        // 使用当前位置自动填入坐标
+                        var fetchingLocation by remember { mutableStateOf(false) }
+
+                        // 获取位置的实际逻辑
+                        fun fetchCurrentLocation() {
+                            fetchingLocation = true
+                            try {
+                                val client = com.google.android.gms.location.LocationServices
+                                    .getFusedLocationProviderClient(context)
+                                client.lastLocation.addOnSuccessListener { location ->
+                                    if (location != null) {
+                                        newLocLat = String.format("%.6f", location.latitude)
+                                        newLocLon = String.format("%.6f", location.longitude)
+                                    }
+                                    fetchingLocation = false
+                                }.addOnFailureListener {
+                                    fetchingLocation = false
+                                }
+                            } catch (_: SecurityException) {
+                                fetchingLocation = false
+                            }
+                        }
+
+                        // 权限请求 launcher
+                        val locPermLauncher = rememberLauncherForActivityResult(
+                            ActivityResultContracts.RequestPermission()
+                        ) { granted ->
+                            if (granted) fetchCurrentLocation()
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+                                val hasPermission = ContextCompat.checkSelfPermission(
+                                    context, Manifest.permission.ACCESS_COARSE_LOCATION
+                                ) == PackageManager.PERMISSION_GRANTED
+                                if (hasPermission) {
+                                    fetchCurrentLocation()
+                                } else {
+                                    locPermLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !fetchingLocation
+                        ) {
+                            if (fetchingLocation) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+                            Text(stringResource(R.string.mode_use_current_location))
+                        }
+                        OutlinedTextField(
+                            value = newLocLat,
+                            onValueChange = { newLocLat = it },
+                            label = { Text(stringResource(R.string.mode_location_lat)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+                        OutlinedTextField(
+                            value = newLocLon,
+                            onValueChange = { newLocLon = it },
+                            label = { Text(stringResource(R.string.mode_location_lon)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                        )
+                        Text(
+                            stringResource(R.string.mode_location_radius, newLocRadius.toInt()),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Slider(
+                            value = newLocRadius,
+                            onValueChange = { newLocRadius = it },
+                            valueRange = 100f..2000f,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Button(
+                            onClick = {
+                                val lat = newLocLat.toDoubleOrNull()
+                                val lon = newLocLon.toDoubleOrNull()
+                                if (newLocName.trim().isNotEmpty() && lat != null && lon != null) {
+                                    locationTriggers = locationTriggers + LocationTrigger(
+                                        name = newLocName.trim(),
+                                        latitude = lat,
+                                        longitude = lon,
+                                        radiusMeters = newLocRadius.toDouble()
+                                    )
+                                    newLocName = ""
+                                    newLocLat = ""
+                                    newLocLon = ""
+                                    newLocRadius = 200f
+                                    showAddLocation = false
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = newLocName.trim().isNotEmpty()
+                                    && newLocLat.toDoubleOrNull() != null
+                                    && newLocLon.toDoubleOrNull() != null
+                        ) {
+                            Text(stringResource(R.string.mode_add_location))
+                        }
+                    }
+                }
+            }
+
+            // Location 列表
+            if (locationTriggers.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    locationTriggers.forEachIndexed { index, trigger ->
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            tonalElevation = 1.dp
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        trigger.name,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    Text(
+                                        "${trigger.latitude}, ${trigger.longitude}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Text(
+                                        stringResource(R.string.mode_location_radius, trigger.radiusMeters.toInt()),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        locationTriggers = locationTriggers.toMutableList().also {
+                                            it.removeAt(index)
+                                        }
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = "Remove location",
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    stringResource(R.string.mode_no_locations),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             // Save 按钮
             Button(
                 onClick = {
@@ -378,7 +595,8 @@ fun ModeEditorScreen(
                         promptSuffix = promptSuffix,
                         editPromptSuffix = editPromptSuffix,
                         customWords = customWords,
-                        language = selectedLanguage
+                        language = selectedLanguage,
+                        locationTriggers = locationTriggers
                     )
 
                     if (isNewMode) {
@@ -416,6 +634,7 @@ fun ModeEditorScreen(
                             editPromptSuffix = resetMode.editPromptSuffix
                             customWords = resetMode.customWords
                             selectedLanguage = resetMode.language
+                            locationTriggers = resetMode.locationTriggers
                         }
                     },
                     modifier = Modifier.fillMaxWidth()

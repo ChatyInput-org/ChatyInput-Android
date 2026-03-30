@@ -136,6 +136,16 @@ class AppConfig(context: Context) {
         get() = prefs.getBoolean("auto_mode_enabled", false)
         set(v) = prefs.edit().putBoolean("auto_mode_enabled", v).apply()
 
+    // 位置模式（默认关闭，用户手动开启）
+    var locationModeEnabled: Boolean
+        get() = prefs.getBoolean("location_mode_enabled", false)
+        set(v) = prefs.edit().putBoolean("location_mode_enabled", v).apply()
+
+    // 基于位置的语言切换（默认关闭，需要 locationModeEnabled 也开启）
+    var locationLanguageEnabled: Boolean
+        get() = prefs.getBoolean("location_language_enabled", false)
+        set(v) = prefs.edit().putBoolean("location_language_enabled", v).apply()
+
     // Whisper 语言代码（根据 app 语言设置）
     private val whisperLanguage: String get() = when (resolvedLanguage) {
         AppLanguage.ZH_CN, AppLanguage.ZH_TW -> "zh"

@@ -296,4 +296,22 @@ object ModeSelectionPrompts {
             else -> "---\nCurrent mode: $currentMode (locked) | App: $appName\nDo not suggest mode changes."
         }
     }
+
+    // 基于位置的语言切换指令（追加到 system prompt 末尾）
+    fun getLanguageSwitchSuffix(language: AppLanguage, lat: Double, lon: Double): String {
+        val locStr = "lat=${String.format("%.4f", lat)}, lon=${String.format("%.4f", lon)}"
+        val resolved = if (language == AppLanguage.AUTO) AppLanguage.detectSystem() else language
+        return when (resolved) {
+            AppLanguage.ZH_CN -> "注意：用户当前位置在 $locStr。如果根据位置和对话上下文判断需要使用其他语言输出，请直接使用该语言输出，不需要使用当前系统语言。"
+            AppLanguage.ZH_TW -> "注意：用戶當前位置在 $locStr。如果根據位置和對話上下文判斷需要使用其他語言輸出，請直接使用該語言輸出，不需要使用當前系統語言。"
+            AppLanguage.JA -> "注意：ユーザーの現在位置は $locStr です。位置や会話の文脈から別の言語で出力すべきと判断した場合、その言語で直接出力してください。"
+            AppLanguage.KO -> "참고: 사용자의 현재 위치는 $locStr 입니다. 위치와 대화 맥락에 따라 다른 언어로 출력해야 한다고 판단되면 해당 언어로 직접 출력하세요."
+            AppLanguage.FR -> "Note : L'utilisateur se trouve à $locStr. Si le contexte de localisation et de conversation suggère une autre langue de sortie, utilisez cette langue directement."
+            AppLanguage.ES -> "Nota: El usuario se encuentra en $locStr. Si el contexto de ubicación y conversación sugiere otro idioma de salida, use ese idioma directamente."
+            AppLanguage.HI -> "नोट: उपयोगकर्ता की वर्तमान स्थिति $locStr है। यदि स्थान और बातचीत के संदर्भ से किसी अन्य भाषा में आउटपुट उचित लगे, तो सीधे उस भाषा में आउटपुट करें।"
+            AppLanguage.AR -> "ملاحظة: موقع المستخدم الحالي هو $locStr. إذا كان سياق الموقع والمحادثة يقترح لغة إخراج مختلفة، استخدم تلك اللغة مباشرة."
+            AppLanguage.PT -> "Nota: O usuário está em $locStr. Se o contexto de localização e conversa sugerir outro idioma de saída, use esse idioma diretamente."
+            else -> "Note: The user is currently located at $locStr. If based on the location and conversation context a different output language would be more appropriate, output in that language directly."
+        }
+    }
 }

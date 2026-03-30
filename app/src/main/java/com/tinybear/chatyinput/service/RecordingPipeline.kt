@@ -23,7 +23,8 @@ data class QueueStatus(
 class RecordingPipeline(
     private val config: AppConfig,
     private val context: Context,
-    private val modeResolver: ModeResolver? = null
+    private val modeResolver: ModeResolver? = null,
+    var locationProvider: LocationProvider? = null
 ) {
     companion object {
         private const val TAG = "RecordingPipeline"
@@ -120,15 +121,27 @@ class RecordingPipeline(
                     val resolved = modeResolver?.resolveMode(segment.appPackage, llmSuggestedModeId)
                         ?: ResolvedMode(null, ModeSource.DEFAULT)
                     val mode = resolved.mode
-                    val finalPrompt = modeResolver?.buildFinalPrompt(basePrompt, mode, segment.isEdit) ?: basePrompt
+                    // 位置信息（仅在 locationModeEnabled 时获取）
+                    val location = if (config.locationModeEnabled) locationProvider?.getCachedLocation() else null
+
+                    var finalPrompt = modeResolver?.buildFinalPrompt(basePrompt, mode, segment.isEdit) ?: basePrompt
                     val mergedWords = modeResolver?.mergeCustomWords(config.customWords, mode) ?: config.customWords
+
+                    // 基于位置的语言切换指令（两个开关都开时追加到 prompt 末尾）
+                    if (config.locationModeEnabled && config.locationLanguageEnabled && location != null) {
+                        finalPrompt += "\n\n" + com.tinybear.chatyinput.config.ModeSelectionPrompts.getLanguageSwitchSuffix(
+                            config.resolvedLanguage, location.latitude, location.longitude
+                        )
+                    }
 
                     // 生成 Mode 上下文（附加到 user message，让 LLM 判断是否切换）
                     val modeContext = modeResolver?.buildModeContext(
                         currentMode = mode,
                         appPackage = segment.appPackage,
                         isForced = resolved.isForced,
-                        language = config.resolvedLanguage
+                        language = config.resolvedLanguage,
+                        location = location,
+                        locationProvider = locationProvider
                     ) ?: ""
 
                     val processor = VoiceIntentProcessor(

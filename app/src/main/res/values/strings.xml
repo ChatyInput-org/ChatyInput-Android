@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">Auto-switch</string>
-    <string name="mode_auto_switch_desc">Automatically switch modes based on the active app</string>
+    <string name="mode_auto_switch_desc">AI automatically switches modes based on the active app and context</string>
     <string name="mode_active">Active Mode</string>
     <string name="mode_default">Default</string>
     <string name="mode_empty">No modes yet</string>
@@ -124,6 +124,21 @@
     <string name="mode_apps_count">%d apps</string>
     <string name="mode_forced">Locked (AI cannot override)</string>
     <string name="mode_llm_switched">AI switched to: %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">Location Context</string>
+    <string name="mode_location_context_desc">Include GPS location in AI context for mode switching</string>
+    <string name="mode_location_language">Location Language</string>
+    <string name="mode_location_language_desc">AI may switch output language based on your location</string>
+    <string name="mode_location_triggers">Location Triggers</string>
+    <string name="mode_location_triggers_desc">Locations that trigger this mode when nearby</string>
+    <string name="mode_add_location">Add Location</string>
+    <string name="mode_location_name">Location name</string>
+    <string name="mode_location_lat">Latitude</string>
+    <string name="mode_location_lon">Longitude</string>
+    <string name="mode_location_radius">Radius: %dm</string>
+    <string name="mode_no_locations">No location triggers</string>
+    <string name="mode_use_current_location">Use Current Location</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">Press back again to exit</string>

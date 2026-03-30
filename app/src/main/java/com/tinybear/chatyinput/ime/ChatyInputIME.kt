@@ -16,6 +16,7 @@ import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.config.LocaleHelper
 import com.tinybear.chatyinput.model.VoiceIntent
 import com.tinybear.chatyinput.service.AudioCaptureService
+import com.tinybear.chatyinput.service.LocationProvider
 import com.tinybear.chatyinput.service.ModeManager
 import com.tinybear.chatyinput.service.ModeResolver
 import com.tinybear.chatyinput.service.RecordingPipeline
@@ -88,7 +89,9 @@ class ChatyInputIME : InputMethodService(),
         val config = AppConfig(applicationContext)
         val modeManager = ModeManager(applicationContext)
         val modeResolver = ModeResolver(config, modeManager)
-        pipeline = RecordingPipeline(config, applicationContext, modeResolver).also { p ->
+        val locationProvider = if (config.locationModeEnabled) LocationProvider(applicationContext) else null
+        locationProvider?.refreshLocation()
+        pipeline = RecordingPipeline(config, applicationContext, modeResolver, locationProvider).also { p ->
             p.onBufferUpdated = { result, newBuffer ->
                 buffer.value = newBuffer
                 when (result.intent) {

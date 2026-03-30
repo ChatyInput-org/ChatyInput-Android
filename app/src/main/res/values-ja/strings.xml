@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">自動切替</string>
-    <string name="mode_auto_switch_desc">アクティブなアプリに応じてモードを自動切替</string>
+    <string name="mode_auto_switch_desc">AIがアクティブなアプリとコンテキストに基づいてモードを自動切替</string>
     <string name="mode_active">有効なモード</string>
     <string name="mode_default">デフォルト</string>
     <string name="mode_empty">モードがありません</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">モードを保存しました。</string>
     <string name="mode_forced">ロック済み（AIは変更不可）</string>
     <string name="mode_llm_switched">AIがモードを切替: %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">位置コンテキスト</string>
+    <string name="mode_location_context_desc">モード切替のためにGPS位置情報をAIコンテキストに含める</string>
+    <string name="mode_location_language">位置による言語切替</string>
+    <string name="mode_location_language_desc">AIが位置に基づいて出力言語を切り替える場合があります</string>
+    <string name="mode_location_triggers">位置トリガー</string>
+    <string name="mode_location_triggers_desc">近くにいるとこのモードをトリガーする位置</string>
+    <string name="mode_add_location">位置を追加</string>
+    <string name="mode_location_name">位置名</string>
+    <string name="mode_location_lat">緯度</string>
+    <string name="mode_location_lon">経度</string>
+    <string name="mode_location_radius">半径: %dm</string>
+    <string name="mode_no_locations">位置トリガーなし</string>
+    <string name="mode_use_current_location">現在地を使用</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">もう一度押すと終了します</string>

@@ -3,6 +3,7 @@
     android:settingsActivity="com.tinybear.chatyinput.ui.MainActivity">
     <subtype
         android:imeSubtypeMode="keyboard"
-        android:imeSubtypeLocale="zh_CN"
-        android:label="ChatyInput" />
+        android:imeSubtypeLocale="en_US"
+        android:label="@string/app_name"
+        android:overridesImplicitlyEnabledSubtype="true" />
 </input-method>

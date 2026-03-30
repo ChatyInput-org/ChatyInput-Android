@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">자동 전환</string>
-    <string name="mode_auto_switch_desc">활성 앱에 따라 모드를 자동 전환</string>
+    <string name="mode_auto_switch_desc">AI가 활성 앱과 컨텍스트에 따라 모드를 자동 전환</string>
     <string name="mode_active">활성 모드</string>
     <string name="mode_default">기본</string>
     <string name="mode_empty">모드 없음</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">모드가 저장되었습니다.</string>
     <string name="mode_forced">잠금 (AI가 변경 불가)</string>
     <string name="mode_llm_switched">AI가 모드 전환: %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">위치 컨텍스트</string>
+    <string name="mode_location_context_desc">모드 전환을 위해 AI 컨텍스트에 GPS 위치 포함</string>
+    <string name="mode_location_language">위치 기반 언어 전환</string>
+    <string name="mode_location_language_desc">AI가 위치에 따라 출력 언어를 전환할 수 있습니다</string>
+    <string name="mode_location_triggers">위치 트리거</string>
+    <string name="mode_location_triggers_desc">근처에 있을 때 이 모드를 트리거하는 위치</string>
+    <string name="mode_add_location">위치 추가</string>
+    <string name="mode_location_name">위치 이름</string>
+    <string name="mode_location_lat">위도</string>
+    <string name="mode_location_lon">경도</string>
+    <string name="mode_location_radius">반경: %dm</string>
+    <string name="mode_no_locations">위치 트리거 없음</string>
+    <string name="mode_use_current_location">현재 위치 사용</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">한 번 더 누르면 종료됩니다</string>

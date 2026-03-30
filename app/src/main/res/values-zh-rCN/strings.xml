@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">自动切换</string>
-    <string name="mode_auto_switch_desc">根据当前应用自动切换模式</string>
+    <string name="mode_auto_switch_desc">AI 根据当前应用和上下文自动切换模式</string>
     <string name="mode_active">当前模式</string>
     <string name="mode_default">默认</string>
     <string name="mode_empty">暂无模式</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">模式已保存。</string>
     <string name="mode_forced">已锁定（AI 无法覆盖）</string>
     <string name="mode_llm_switched">AI 切换至：%s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">位置上下文</string>
+    <string name="mode_location_context_desc">在 AI 上下文中包含 GPS 位置信息用于模式切换</string>
+    <string name="mode_location_language">位置语言切换</string>
+    <string name="mode_location_language_desc">AI 可能根据你的位置切换输出语言</string>
+    <string name="mode_location_triggers">位置触发器</string>
+    <string name="mode_location_triggers_desc">在附近时触发此模式的位置</string>
+    <string name="mode_add_location">添加位置</string>
+    <string name="mode_location_name">位置名称</string>
+    <string name="mode_location_lat">纬度</string>
+    <string name="mode_location_lon">经度</string>
+    <string name="mode_location_radius">半径：%dm</string>
+    <string name="mode_no_locations">无位置触发器</string>
+    <string name="mode_use_current_location">使用当前位置</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">再按一次返回键退出</string>

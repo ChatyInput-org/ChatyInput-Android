@@ -1,6 +1,10 @@
 package com.tinybear.chatyinput.ui
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -19,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import com.tinybear.chatyinput.R
 import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.model.Mode
@@ -37,7 +42,22 @@ fun ModeListScreen(
     var modes by remember { mutableStateOf(modeManager.getAllModes()) }
     var activeModeId by remember { mutableStateOf(config.activeModeId) }
     var autoModeEnabled by remember { mutableStateOf(config.autoModeEnabled) }
+    var locationModeEnabled by remember { mutableStateOf(config.locationModeEnabled) }
+    var locationLanguageEnabled by remember { mutableStateOf(config.locationLanguageEnabled) }
     var showDeleteDialog by remember { mutableStateOf<Mode?>(null) }
+
+    // 位置权限请求
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            locationModeEnabled = true
+            config.locationModeEnabled = true
+        } else {
+            locationModeEnabled = false
+            config.locationModeEnabled = false
+        }
+    }
 
     Scaffold(
         floatingActionButton = {
@@ -91,6 +111,91 @@ fun ModeListScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                }
+            }
+
+            // Location Context 开关
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                tonalElevation = 1.dp
+            ) {
+                Column(
+                    modifier = Modifier.padding(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.mode_location_context),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Switch(
+                            checked = locationModeEnabled,
+                            onCheckedChange = { enabled ->
+                                if (enabled) {
+                                    val hasPermission = ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.ACCESS_COARSE_LOCATION
+                                    ) == PackageManager.PERMISSION_GRANTED
+                                    if (hasPermission) {
+                                        locationModeEnabled = true
+                                        config.locationModeEnabled = true
+                                    } else {
+                                        locationPermissionLauncher.launch(
+                                            Manifest.permission.ACCESS_COARSE_LOCATION
+                                        )
+                                    }
+                                } else {
+                                    locationModeEnabled = false
+                                    config.locationModeEnabled = false
+                                }
+                            }
+                        )
+                    }
+                    Text(
+                        stringResource(R.string.mode_location_context_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            // Location Language 开关（仅在 locationModeEnabled 时显示）
+            if (locationModeEnabled) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(8.dp),
+                    tonalElevation = 1.dp
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                stringResource(R.string.mode_location_language),
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Switch(
+                                checked = locationLanguageEnabled,
+                                onCheckedChange = {
+                                    locationLanguageEnabled = it
+                                    config.locationLanguageEnabled = it
+                                }
+                            )
+                        }
+                        Text(
+                            stringResource(R.string.mode_location_language_desc),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 

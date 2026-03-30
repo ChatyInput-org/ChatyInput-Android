@@ -87,7 +87,7 @@
 
     <!-- Modes screen -->
     <string name="mode_auto_switch">ऑटो-स्विच</string>
-    <string name="mode_auto_switch_desc">सक्रिय ऐप के आधार पर स्वचालित रूप से मोड बदलें</string>
+    <string name="mode_auto_switch_desc">AI सक्रिय ऐप और संदर्भ के आधार पर स्वचालित रूप से मोड बदलता है</string>
     <string name="mode_active">सक्रिय मोड</string>
     <string name="mode_default">डिफ़ॉल्ट</string>
     <string name="mode_empty">कोई मोड नहीं</string>
@@ -124,6 +124,21 @@
     <string name="mode_saved">मोड सहेजा गया।</string>
     <string name="mode_forced">लॉक (AI बदल नहीं सकता)</string>
     <string name="mode_llm_switched">AI ने मोड बदला: %s</string>
+
+    <!-- Location -->
+    <string name="mode_location_context">स्थान संदर्भ</string>
+    <string name="mode_location_context_desc">मोड स्विचिंग के लिए AI संदर्भ में GPS स्थान शामिल करें</string>
+    <string name="mode_location_language">स्थान भाषा स्विच</string>
+    <string name="mode_location_language_desc">AI आपके स्थान के आधार पर आउटपुट भाषा बदल सकता है</string>
+    <string name="mode_location_triggers">स्थान ट्रिगर</string>
+    <string name="mode_location_triggers_desc">पास होने पर इस मोड को ट्रिगर करने वाले स्थान</string>
+    <string name="mode_add_location">स्थान जोड़ें</string>
+    <string name="mode_location_name">स्थान का नाम</string>
+    <string name="mode_location_lat">अक्षांश</string>
+    <string name="mode_location_lon">देशांतर</string>
+    <string name="mode_location_radius">त्रिज्या: %dm</string>
+    <string name="mode_no_locations">कोई स्थान ट्रिगर नहीं</string>
+    <string name="mode_use_current_location">वर्तमान स्थान का उपयोग करें</string>
 
     <!-- Navigation -->
     <string name="back_to_exit">बाहर निकलने के लिए फिर से दबाएं</string>
