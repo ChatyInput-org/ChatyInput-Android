@@ -5,6 +5,7 @@ import android.util.Log
 import com.tinybear.chatyinput.config.AppConfig
 import com.tinybear.chatyinput.model.HistoryEntry
 import com.tinybear.chatyinput.model.ProcessingResult
+import com.tinybear.chatyinput.model.ToolSideEffect
 import com.tinybear.chatyinput.model.VoiceIntent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -124,8 +125,23 @@ class RecordingPipeline(
                     // 位置信息（仅在 locationModeEnabled 时获取）
                     val location = if (config.locationModeEnabled) locationProvider?.getCachedLocation() else null
 
-                    var finalPrompt = modeResolver?.buildFinalPrompt(basePrompt, mode, segment.isEdit) ?: basePrompt
+                    // GPS 语言切换开启时，弱化 prompt 中的语言限制
+                    val effectiveBasePrompt = if (config.locationModeEnabled && config.locationLanguageEnabled && location != null) {
+                        basePrompt
+                            .replace("请严格使用简体中文，不要使用繁体中文", "默认使用简体中文，但可根据位置和上下文切换语言")
+                            .replace("請嚴格使用繁體中文，不要使用簡體中文", "預設使用繁體中文，但可根據位置和上下文切換語言")
+                            .replace(Regex("The user's primary language is (\\w+)\\."), "The user's default language is $1, but may switch based on location and context.")
+                    } else basePrompt
+
+                    var finalPrompt = modeResolver?.buildFinalPrompt(effectiveBasePrompt, mode, segment.isEdit) ?: effectiveBasePrompt
                     val mergedWords = modeResolver?.mergeCustomWords(config.customWords, mode) ?: config.customWords
+
+                    // Smart/Strict Edit 模式
+                    if (config.smartEditMode) {
+                        finalPrompt += "\n\n" + config.smartEditPrompt
+                    } else {
+                        finalPrompt += "\n\n" + config.strictEditPrompt
+                    }
 
                     // 基于位置的语言切换指令（两个开关都开时追加到 prompt 末尾）
                     if (config.locationModeEnabled && config.locationLanguageEnabled && location != null) {
@@ -144,21 +160,47 @@ class RecordingPipeline(
                         locationProvider = locationProvider
                     ) ?: ""
 
+                    // 创建 Tool 系统
+                    val toolRegistry = ToolRegistry.createDefault()
+                    val modeManagerForTools = ModeManager(context)
+                    val toolExecutor = ToolExecutor(modeManagerForTools)
+
                     val processor = VoiceIntentProcessor(
                         llmProvider = llmProvider,
                         systemPrompt = finalPrompt,
-                        customWords = mergedWords
+                        customWords = mergedWords,
+                        toolRegistry = toolRegistry,
+                        toolExecutor = toolExecutor,
+                        maxToolRounds = config.maxToolRounds
                     )
 
-                    val result = processor.process(segment.transcript, buffer, modeContext)
+                    val toolResult = processor.process(segment.transcript, buffer, modeContext)
+                    val result = toolResult.processingResult
 
-                    // 处理 LLM 建议的 Mode 切换（仅 forced 时不生效）
-                    if (!result.suggestedMode.isNullOrBlank() && !resolved.isForced) {
-                        val modeManager = ModeManager(context)
-                        val suggested = modeManager.getMode(result.suggestedMode)
+                    // 处理 tool 副作用
+                    for (effect in toolResult.sideEffects) {
+                        when (effect) {
+                            is ToolSideEffect.ModeSwitched -> {
+                                if (!resolved.isForced) {
+                                    llmSuggestedModeId = effect.modeId
+                                    Log.i(TAG, "Tool switch_mode: ${effect.modeName}")
+                                    withContext(Dispatchers.Main) {
+                                        val name = "${effect.modeEmoji ?: ""} ${effect.modeName}".trim()
+                                        onModeChanged?.invoke(name)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // 兼容旧 suggested_mode JSON 字段（fallback）
+                    if (toolResult.sideEffects.none { it is ToolSideEffect.ModeSwitched } &&
+                        !result.suggestedMode.isNullOrBlank() && !resolved.isForced) {
+                        val modeManager2 = ModeManager(context)
+                        val suggested = modeManager2.getMode(result.suggestedMode)
                         if (suggested != null) {
                             llmSuggestedModeId = result.suggestedMode
-                            Log.i(TAG, "LLM suggested mode switch: ${suggested.name}")
+                            Log.i(TAG, "LLM suggested_mode fallback: ${suggested.name}")
                             withContext(Dispatchers.Main) {
                                 val name = "${suggested.iconEmoji ?: ""} ${suggested.name}".trim()
                                 onModeChanged?.invoke(name)

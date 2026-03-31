@@ -8,6 +8,13 @@
     <string name="tab_modes">Modes</string>
     <string name="tab_settings">Settings</string>
 
+    <!-- Home screen -->
+    <string name="home_title">Test Area</string>
+    <string name="home_description">Switch to ChatyInput keyboard here to test your voice input, prompts, and modes.</string>
+    <string name="home_text_area_hint">Type or use voice input here…</string>
+    <string name="home_load_to_buffer">Load to Buffer</string>
+    <string name="home_loaded_to_buffer">Loaded to keyboard buffer. Switch to ChatyInput keyboard to continue editing.</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">Text Buffer</string>
     <string name="btn_record">Record</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">Silence Threshold</string>
     <string name="settings_system_prompt">System Prompt</string>
     <string name="settings_reset_default">Reset to Default</string>
+    <string name="settings_smart_edit_prompt">Smart Edit Prompt</string>
+    <string name="settings_smart_edit_prompt_desc">Prompt appended when Smart edit mode is enabled</string>
+    <string name="settings_strict_edit_prompt">Strict Edit Prompt</string>
+    <string name="settings_strict_edit_prompt_desc">Prompt appended when Strict edit mode is enabled</string>
     <string name="btn_save">Save</string>
     <string name="settings_saved">Settings saved.</string>
+    <string name="settings_tool_use">Tool Use</string>
+    <string name="settings_max_tool_rounds">Max Tool Rounds</string>
+    <string name="settings_max_tool_rounds_desc">Maximum number of tool call iterations per voice segment</string>
     <string name="settings_history">History</string>
     <string name="settings_retention">Retention Period</string>
     <string name="settings_clear_all">Clear All History</string>

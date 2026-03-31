@@ -8,6 +8,13 @@
     <string name="tab_modes">मोड</string>
     <string name="tab_settings">सेटिंग्स</string>
 
+    <!-- Home screen -->
+    <string name="home_title">परीक्षण क्षेत्र</string>
+    <string name="home_description">अपनी वॉइस इनपुट, प्रॉम्प्ट और मोड का परीक्षण करने के लिए यहाँ ChatyInput कीबोर्ड पर स्विच करें।</string>
+    <string name="home_text_area_hint">यहाँ टाइप करें या वॉइस इनपुट का उपयोग करें…</string>
+    <string name="home_load_to_buffer">बफ़र में लोड करें</string>
+    <string name="home_loaded_to_buffer">कीबोर्ड बफ़र में लोड किया गया। संपादन जारी रखने के लिए ChatyInput कीबोर्ड पर स्विच करें।</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">टेक्स्ट बफ़र</string>
     <string name="btn_record">रिकॉर्ड</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">मौन सीमा</string>
     <string name="settings_system_prompt">सिस्टम प्रॉम्प्ट</string>
     <string name="settings_reset_default">डिफ़ॉल्ट पर रीसेट करें</string>
+    <string name="settings_smart_edit_prompt">स्मार्ट संपादन प्रॉम्प्ट</string>
+    <string name="settings_smart_edit_prompt_desc">स्मार्ट संपादन मोड सक्षम होने पर जोड़ा गया प्रॉम्प्ट</string>
+    <string name="settings_strict_edit_prompt">सख्त संपादन प्रॉम्प्ट</string>
+    <string name="settings_strict_edit_prompt_desc">सख्त संपादन मोड सक्षम होने पर जोड़ा गया प्रॉम्प्ट</string>
     <string name="btn_save">सहेजें</string>
     <string name="settings_saved">सेटिंग्स सहेजी गईं।</string>
+    <string name="settings_tool_use">टूल उपयोग</string>
+    <string name="settings_max_tool_rounds">अधिकतम टूल राउंड</string>
+    <string name="settings_max_tool_rounds_desc">प्रति वॉइस सेगमेंट अधिकतम टूल कॉल संख्या</string>
     <string name="settings_history">इतिहास</string>
     <string name="settings_retention">अवधारण अवधि</string>
     <string name="settings_clear_all">सारा इतिहास मिटाएँ</string>

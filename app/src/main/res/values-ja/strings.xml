@@ -8,6 +8,13 @@
     <string name="tab_modes">モード</string>
     <string name="tab_settings">設定</string>
 
+    <!-- Home screen -->
+    <string name="home_title">テストエリア</string>
+    <string name="home_description">ここでChatyInputキーボードに切り替えて、音声入力、プロンプト、モードをテストしてください。</string>
+    <string name="home_text_area_hint">ここに入力または音声入力…</string>
+    <string name="home_load_to_buffer">バッファに読み込み</string>
+    <string name="home_loaded_to_buffer">キーボードバッファに読み込みました。ChatyInputキーボードに切り替えて編集を続けてください。</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">テキストバッファ</string>
     <string name="btn_record">録音</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">無音しきい値</string>
     <string name="settings_system_prompt">システムプロンプト</string>
     <string name="settings_reset_default">デフォルトに戻す</string>
+    <string name="settings_smart_edit_prompt">スマート編集プロンプト</string>
+    <string name="settings_smart_edit_prompt_desc">スマート編集モード有効時に追加されるプロンプト</string>
+    <string name="settings_strict_edit_prompt">厳格編集プロンプト</string>
+    <string name="settings_strict_edit_prompt_desc">厳格編集モード有効時に追加されるプロンプト</string>
     <string name="btn_save">保存</string>
     <string name="settings_saved">設定を保存しました。</string>
+    <string name="settings_tool_use">ツール使用</string>
+    <string name="settings_max_tool_rounds">最大ツールラウンド</string>
+    <string name="settings_max_tool_rounds_desc">音声セグメントごとのツール呼び出しの最大回数</string>
     <string name="settings_history">履歴</string>
     <string name="settings_retention">保持期間</string>
     <string name="settings_clear_all">すべての履歴を削除</string>

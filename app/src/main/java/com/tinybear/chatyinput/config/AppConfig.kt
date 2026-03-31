@@ -136,6 +136,41 @@ class AppConfig(context: Context) {
         get() = prefs.getBoolean("auto_mode_enabled", false)
         set(v) = prefs.edit().putBoolean("auto_mode_enabled", v).apply()
 
+    // Pending buffer（主 App 写入，IME 读取后清除）
+    // 同进程共享内存，用 static 变量
+    companion object {
+        @Volatile
+        var pendingBuffer: String? = null
+    }
+
+    // Smart/Strict 编辑模式（Smart=true: AI 更主动编辑，Strict=false: 需明确指令）
+    var smartEditMode: Boolean
+        get() = prefs.getBoolean("smart_edit_mode", false)
+        set(v) = prefs.edit().putBoolean("smart_edit_mode", v).apply()
+
+    // Smart Edit Prompt（默认值根据语言变化）
+    var smartEditPrompt: String
+        get() = prefs.getString("smart_edit_prompt", null) ?: SmartEditPrompts.getSuffix(language)
+        set(v) = prefs.edit().putString("smart_edit_prompt", v).apply()
+
+    // Strict Edit Prompt（默认值根据语言变化）
+    var strictEditPrompt: String
+        get() = prefs.getString("strict_edit_prompt", null) ?: StrictEditPrompts.getSuffix(language)
+        set(v) = prefs.edit().putString("strict_edit_prompt", v).apply()
+
+    fun resetSmartEditPrompt() {
+        prefs.edit().remove("smart_edit_prompt").apply()
+    }
+
+    fun resetStrictEditPrompt() {
+        prefs.edit().remove("strict_edit_prompt").apply()
+    }
+
+    // Tool use 最大轮次（1-5）
+    var maxToolRounds: Int
+        get() = prefs.getInt("max_tool_rounds", 3)
+        set(v) = prefs.edit().putInt("max_tool_rounds", v.coerceIn(1, 5)).apply()
+
     // 位置模式（默认关闭，用户手动开启）
     var locationModeEnabled: Boolean
         get() = prefs.getBoolean("location_mode_enabled", false)

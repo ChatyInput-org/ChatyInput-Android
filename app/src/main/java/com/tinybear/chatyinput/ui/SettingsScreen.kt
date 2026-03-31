@@ -64,11 +64,18 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
     // VAD 静音阈值
     var silenceThreshold by remember { mutableStateOf(config.silenceThreshold) }
 
+    // Tool use 最大轮次
+    var maxToolRounds by remember { mutableStateOf(config.maxToolRounds.toFloat()) }
+
     // System Prompt（根据语言动态获取默认值）
     var systemPrompt by remember { mutableStateOf(config.systemPrompt) }
 
     // Edit Prompt（编辑指令专用）
     var editSystemPrompt by remember { mutableStateOf(config.editSystemPrompt) }
+
+    // Smart/Strict Edit Prompt
+    var smartEditPrompt by remember { mutableStateOf(config.smartEditPrompt) }
+    var strictEditPrompt by remember { mutableStateOf(config.strictEditPrompt) }
 
     // 保存状态提示
     var showSaved by remember { mutableStateOf(false) }
@@ -360,6 +367,40 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
             }
         }
 
+        // === Tool Use 配置 ===
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.settings_tool_use),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.settings_max_tool_rounds), style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "${maxToolRounds.toInt()}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+            Text(
+                stringResource(R.string.settings_max_tool_rounds_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Slider(
+                value = maxToolRounds,
+                onValueChange = { maxToolRounds = Math.round(it).toFloat() },
+                valueRange = 1f..5f,
+                steps = 3,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
         // === History 配置 ===
         item {
             Spacer(modifier = Modifier.height(8.dp))
@@ -479,6 +520,78 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
             }
         }
 
+        // === Smart Edit Prompt ===
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.settings_smart_edit_prompt),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.settings_smart_edit_prompt_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        item {
+            OutlinedTextField(
+                value = smartEditPrompt,
+                onValueChange = { smartEditPrompt = it },
+                label = { Text(stringResource(R.string.settings_smart_edit_prompt)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 120.dp),
+                maxLines = 10
+            )
+        }
+
+        item {
+            TextButton(onClick = {
+                config.resetSmartEditPrompt()
+                smartEditPrompt = config.smartEditPrompt
+            }) {
+                Text(stringResource(R.string.settings_reset_default))
+            }
+        }
+
+        // === Strict Edit Prompt ===
+        item {
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.settings_strict_edit_prompt),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.settings_strict_edit_prompt_desc),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+        item {
+            OutlinedTextField(
+                value = strictEditPrompt,
+                onValueChange = { strictEditPrompt = it },
+                label = { Text(stringResource(R.string.settings_strict_edit_prompt)) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 100.dp),
+                maxLines = 8
+            )
+        }
+
+        item {
+            TextButton(onClick = {
+                config.resetStrictEditPrompt()
+                strictEditPrompt = config.strictEditPrompt
+            }) {
+                Text(stringResource(R.string.settings_reset_default))
+            }
+        }
+
         // === Save 按钮 ===
         item {
             Spacer(modifier = Modifier.height(8.dp))
@@ -499,9 +612,12 @@ fun SettingsScreen(config: AppConfig, onLanguageChanged: () -> Unit = {}) {
                     config.compatibleModel = compatibleModel
                     config.systemPrompt = systemPrompt
                     config.editSystemPrompt = editSystemPrompt
+                    config.smartEditPrompt = smartEditPrompt
+                    config.strictEditPrompt = strictEditPrompt
                     config.language = language
                     config.recordingMode = recordingMode
                     config.silenceThreshold = silenceThreshold
+                    config.maxToolRounds = maxToolRounds.toInt()
                     config.historyRetentionDays = historyRetentionDays
                     showSaved = true
 

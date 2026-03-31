@@ -8,6 +8,13 @@
     <string name="tab_modes">Modes</string>
     <string name="tab_settings">Paramètres</string>
 
+    <!-- Home screen -->
+    <string name="home_title">Zone de test</string>
+    <string name="home_description">Basculez vers le clavier ChatyInput ici pour tester votre saisie vocale, vos prompts et vos modes.</string>
+    <string name="home_text_area_hint">Tapez ou utilisez la saisie vocale ici…</string>
+    <string name="home_load_to_buffer">Charger dans le tampon</string>
+    <string name="home_loaded_to_buffer">Chargé dans le tampon du clavier. Basculez vers ChatyInput pour continuer.</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">Tampon de texte</string>
     <string name="btn_record">Enregistrer</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">Seuil de silence</string>
     <string name="settings_system_prompt">Prompt système</string>
     <string name="settings_reset_default">Réinitialiser par défaut</string>
+    <string name="settings_smart_edit_prompt">Prompt d\'édition intelligente</string>
+    <string name="settings_smart_edit_prompt_desc">Prompt ajouté lorsque le mode d\'édition intelligente est activé</string>
+    <string name="settings_strict_edit_prompt">Prompt d\'édition stricte</string>
+    <string name="settings_strict_edit_prompt_desc">Prompt ajouté lorsque le mode d\'édition stricte est activé</string>
     <string name="btn_save">Enregistrer</string>
     <string name="settings_saved">Paramètres enregistrés.</string>
+    <string name="settings_tool_use">Utilisation d\'outils</string>
+    <string name="settings_max_tool_rounds">Tours d\'outils max</string>
+    <string name="settings_max_tool_rounds_desc">Nombre maximum d\'appels d\'outils par segment vocal</string>
     <string name="settings_history">Historique</string>
     <string name="settings_retention">Durée de conservation</string>
     <string name="settings_clear_all">Effacer tout l\'historique</string>

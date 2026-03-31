@@ -8,6 +8,13 @@
     <string name="tab_modes">الأوضاع</string>
     <string name="tab_settings">الإعدادات</string>
 
+    <!-- Home screen -->
+    <string name="home_title">منطقة الاختبار</string>
+    <string name="home_description">انتقل إلى لوحة مفاتيح ChatyInput هنا لاختبار الإدخال الصوتي والموجهات والأوضاع.</string>
+    <string name="home_text_area_hint">اكتب أو استخدم الإدخال الصوتي هنا…</string>
+    <string name="home_load_to_buffer">تحميل إلى المخزن</string>
+    <string name="home_loaded_to_buffer">تم التحميل إلى مخزن لوحة المفاتيح. انتقل إلى ChatyInput للمتابعة.</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">مخزن النص المؤقت</string>
     <string name="btn_record">تسجيل</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">عتبة الصمت</string>
     <string name="settings_system_prompt">موجّه النظام</string>
     <string name="settings_reset_default">إعادة التعيين للافتراضي</string>
+    <string name="settings_smart_edit_prompt">موجه التحرير الذكي</string>
+    <string name="settings_smart_edit_prompt_desc">الموجه المُضاف عند تفعيل وضع التحرير الذكي</string>
+    <string name="settings_strict_edit_prompt">موجه التحرير الصارم</string>
+    <string name="settings_strict_edit_prompt_desc">الموجه المُضاف عند تفعيل وضع التحرير الصارم</string>
     <string name="btn_save">حفظ</string>
     <string name="settings_saved">تم حفظ الإعدادات.</string>
+    <string name="settings_tool_use">استخدام الأدوات</string>
+    <string name="settings_max_tool_rounds">أقصى جولات الأدوات</string>
+    <string name="settings_max_tool_rounds_desc">الحد الأقصى لاستدعاءات الأدوات لكل مقطع صوتي</string>
     <string name="settings_history">السجل</string>
     <string name="settings_retention">مدة الاحتفاظ</string>
     <string name="settings_clear_all">مسح كل السجل</string>

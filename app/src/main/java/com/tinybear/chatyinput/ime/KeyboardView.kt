@@ -58,7 +58,9 @@ fun KeyboardView(
     bottomPaddingDp: Int = 0,
     currentModeName: String = "",
     availableModes: List<Pair<String?, String>> = emptyList(),
-    onModeSelected: (String?) -> Unit = {}
+    onModeSelected: (String?) -> Unit = {},
+    isSmartEdit: Boolean = false,
+    onToggleSmartEdit: () -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
     val buttonHeight = 80 // 按钮区固定高度
@@ -264,26 +266,54 @@ fun KeyboardView(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    // Mode 按钮 (1/4)
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .pointerInput(Unit) {
-                                detectTapGestures(onPress = { tryAwaitRelease(); showModeMenu = true })
-                            },
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.tertiary
+                    // Mode + Smart/Strict 列 (1/4)
+                    Column(
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Text(
-                                if (currentModeName.isEmpty()) stringResource(R.string.mode_auto)
-                                else currentModeName.take(2).trim(),
-                                fontSize = 14.sp,
-                                color = Color.White, maxLines = 1
+                        // Mode 按钮（上半）
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onPress = { tryAwaitRelease(); showModeMenu = true })
+                                },
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.tertiary
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    if (currentModeName.isEmpty()) stringResource(R.string.mode_auto)
+                                    else currentModeName.take(2).trim(),
+                                    fontSize = 12.sp,
+                                    color = Color.White, maxLines = 1
                             )
                         }
                     }
+
+                        // Smart/Strict 按钮（下半）
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onPress = { tryAwaitRelease(); onToggleSmartEdit() })
+                                },
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSmartEdit) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    if (isSmartEdit) "\u26A1" else "\uD83D\uDD12",
+                                    fontSize = 14.sp,
+                                    color = if (isSmartEdit) Color.White
+                                            else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } // end Mode + Smart/Strict Column
 
                     // 语音 VAD 按钮 (2/4)
                     val isVoiceActive = isVadListening && !isVadEditMode
@@ -355,26 +385,54 @@ fun KeyboardView(
                     modifier = Modifier.weight(1f).fillMaxHeight(),
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
-                    // Mode 按钮 (1/4)
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .pointerInput(Unit) {
-                                detectTapGestures(onPress = { tryAwaitRelease(); showModeMenu = true })
-                            },
-                        shape = RoundedCornerShape(10.dp),
-                        color = MaterialTheme.colorScheme.tertiary
+                    // Mode + Smart/Strict 列 (1/4)
+                    Column(
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        verticalArrangement = Arrangement.spacedBy(3.dp)
                     ) {
-                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                            Text(
-                                if (currentModeName.isEmpty()) stringResource(R.string.mode_auto)
-                                else currentModeName.take(2).trim(),
-                                fontSize = 14.sp,
-                                color = Color.White, maxLines = 1
+                        // Mode 按钮（上半）
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onPress = { tryAwaitRelease(); showModeMenu = true })
+                                },
+                            shape = RoundedCornerShape(8.dp),
+                            color = MaterialTheme.colorScheme.tertiary
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    if (currentModeName.isEmpty()) stringResource(R.string.mode_auto)
+                                    else currentModeName.take(2).trim(),
+                                    fontSize = 12.sp,
+                                    color = Color.White, maxLines = 1
                             )
                         }
                     }
+
+                        // Smart/Strict 按钮（下半）
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                                .pointerInput(Unit) {
+                                    detectTapGestures(onPress = { tryAwaitRelease(); onToggleSmartEdit() })
+                                },
+                            shape = RoundedCornerShape(8.dp),
+                            color = if (isSmartEdit) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.surfaceVariant
+                        ) {
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                                Text(
+                                    if (isSmartEdit) "\u26A1" else "\uD83D\uDD12",
+                                    fontSize = 14.sp,
+                                    color = if (isSmartEdit) Color.White
+                                            else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    } // end Mode + Smart/Strict Column
 
                     // PTT 大按钮 (2/4)
                     val pttColor = if (isRecording && !isEditMode) Color.Red

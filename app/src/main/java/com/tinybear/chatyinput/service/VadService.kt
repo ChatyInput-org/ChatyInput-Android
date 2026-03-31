@@ -49,6 +49,12 @@ class VadService(
     private var h = FloatArray(STATE_SIZE)
     private var c = FloatArray(STATE_SIZE)
 
+    // 语音收集状态（类级别，stop 时可 flush）
+    private val pcmCollector = mutableListOf<Short>()
+    private var speechFrameCount = 0
+    private var totalSegFrames = 0
+    private var speechActive = false
+
     private fun initModel() {
         if (ortSession != null) return
         ortEnv = OrtEnvironment.getEnvironment()
@@ -171,18 +177,20 @@ class VadService(
         }
 
         _isListening.value = true
+        lastOnSegmentReady = onSegmentReady
+        // 重置语音收集状态
+        pcmCollector.clear()
+        speechFrameCount = 0
+        totalSegFrames = 0
+        speechActive = false
 
         listenJob = scope.launch {
             Log.i(TAG, "VAD listen loop started")
             val readBuf = ShortArray(FRAME_SIZE)
             val frameBuf = ShortArray(FRAME_SIZE)
             var frameBufPos = 0
-            val pcmCollector = mutableListOf<Short>()
-            var speechActive = false
             var silenceStart = 0L
             var frameCount = 0
-            var speechFrameCount = 0
-            var totalSegFrames = 0
 
             while (isActive && _isListening.value) {
                 val read = audioRecord?.read(readBuf, 0, FRAME_SIZE) ?: -1
@@ -282,16 +290,52 @@ class VadService(
         Log.i(TAG, "VAD listening started")
     }
 
+    // 停止时的 segment callback（用于 flush 未处理的语音）
+    private var lastOnSegmentReady: ((ByteArray) -> Unit)? = null
+
     fun stop() {
         _isListening.value = false
         _isSpeaking.value = false
         listenJob?.cancel()
         listenJob = null
+
+        // Flush：如果有未处理的语音数据，提交处理
+        if (pcmCollector.isNotEmpty() && speechFrameCount > 0) {
+            val speechRatio = if (totalSegFrames > 0) speechFrameCount.toFloat() / totalSegFrames else 0f
+            val segmentRms = Math.sqrt(pcmCollector.map { (it.toFloat() / 32768f).toDouble().let { v -> v * v } }.average()).toFloat()
+            val minDuration = pcmCollector.size > SAMPLE_RATE
+
+            if (minDuration && speechRatio > 0.3f && segmentRms > 0.002f) {
+                Log.i(TAG, "Flushing remaining speech on stop: ${pcmCollector.size} samples")
+                val pcmBytes = ByteArray(pcmCollector.size * 2)
+                for (i in pcmCollector.indices) {
+                    pcmBytes[i * 2] = (pcmCollector[i].toInt() and 0xFF).toByte()
+                    pcmBytes[i * 2 + 1] = (pcmCollector[i].toInt() shr 8 and 0xFF).toByte()
+                }
+                val callback = lastOnSegmentReady
+                scope.launch {
+                    try {
+                        val m4a = AudioCaptureService().convertPcmToM4a(pcmBytes, SAMPLE_RATE)
+                        withContext(Dispatchers.Main) {
+                            callback?.invoke(m4a)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Flush PCM to m4a failed: ${e.message}")
+                    }
+                }
+            } else {
+                Log.d(TAG, "Flush discarded: too short or low speech ratio")
+            }
+            pcmCollector.clear()
+        }
+
         try {
             audioRecord?.stop()
             audioRecord?.release()
         } catch (_: Exception) {}
         audioRecord = null
+        speechFrameCount = 0
+        totalSegFrames = 0
         resetState()
         Log.i(TAG, "VAD listening stopped")
     }

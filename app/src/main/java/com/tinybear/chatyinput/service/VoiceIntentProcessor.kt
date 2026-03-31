@@ -1,16 +1,21 @@
 package com.tinybear.chatyinput.service
 
-import com.tinybear.chatyinput.model.ProcessingResult
+import android.util.Log
+import com.tinybear.chatyinput.model.*
 import kotlinx.serialization.json.Json
 
-// 核心：语音意图分类 + 文本处理
+// 核心：语音意图分类 + 文本处理 + 多轮 Tool Use
 class VoiceIntentProcessor(
     private val llmProvider: LLMProvider,
     private val systemPrompt: String = DEFAULT_SYSTEM_PROMPT,
-    private val customWords: List<String> = emptyList()
+    private val customWords: List<String> = emptyList(),
+    private val toolRegistry: ToolRegistry? = null,
+    private val toolExecutor: ToolExecutor? = null,
+    private val maxToolRounds: Int = 3
 ) {
     companion object {
-        const val DEFAULT_SYSTEM_PROMPT = """你是一个语音输入助手。用户通过语音逐段输入文字。
+        private const val TAG = "VoiceIntentProcessor"
+        const val DEFAULT_SYSTEM_PROMPT = """你是一个语音文字助手。用户通过语音输入和处理文字。
 
 每段语音转文字后发给你，判断意图并处理：
 
@@ -25,8 +30,70 @@ class VoiceIntentProcessor(
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    suspend fun process(newSegment: String, currentBuffer: String, modeContext: String = ""): ProcessingResult {
-        val userMessage = buildString {
+    suspend fun process(
+        newSegment: String,
+        currentBuffer: String,
+        modeContext: String = ""
+    ): ToolAwareProcessingResult {
+        val userMessage = buildUserMessage(newSegment, currentBuffer, modeContext)
+
+        // 快速路径：无 tools 或 provider 不支持
+        if (toolRegistry == null || toolExecutor == null || !llmProvider.supportsToolUse) {
+            val response = llmProvider.complete(systemPrompt, userMessage)
+            return ToolAwareProcessingResult(parseResponse(response))
+        }
+
+        // Tool use 路径：多轮循环
+        return processWithTools(userMessage)
+    }
+
+    private suspend fun processWithTools(userMessage: String): ToolAwareProcessingResult {
+        val messages = mutableListOf<ChatMessage>(
+            ChatMessage.System(systemPrompt),
+            ChatMessage.User(userMessage)
+        )
+        val tools = toolRegistry!!.getAll()
+        val allSideEffects = mutableListOf<ToolSideEffect>()
+
+        for (iteration in 0 until maxToolRounds) {
+            Log.d(TAG, "Tool use iteration ${iteration + 1}/$maxToolRounds")
+            val response = llmProvider.completeWithTools(messages, tools)
+
+            when (response) {
+                is LLMResponse.Text -> {
+                    Log.d(TAG, "Final text response received")
+                    return ToolAwareProcessingResult(parseResponse(response.content), allSideEffects)
+                }
+                is LLMResponse.ToolUse -> {
+                    Log.d(TAG, "Tool calls: ${response.toolCalls.map { it.name }}")
+                    // 加入 assistant 消息
+                    messages.add(ChatMessage.Assistant(
+                        content = response.textContent,
+                        toolCalls = response.toolCalls
+                    ))
+                    // 执行每个 tool call
+                    for (toolCall in response.toolCalls) {
+                        val result = toolExecutor!!.execute(toolCall)
+                        allSideEffects.addAll(result.sideEffects)
+                        messages.add(ChatMessage.ToolResult(
+                            toolCallId = toolCall.id,
+                            content = result.content
+                        ))
+                        Log.d(TAG, "Tool ${toolCall.name} result: ${result.content}")
+                    }
+                }
+            }
+        }
+
+        // 超过最大轮次 → fallback 单轮不带 tools
+        Log.w(TAG, "Max tool rounds ($maxToolRounds) exceeded, falling back to single-turn")
+        val response = llmProvider.complete(systemPrompt, messages
+            .filterIsInstance<ChatMessage.User>().first().content)
+        return ToolAwareProcessingResult(parseResponse(response), allSideEffects)
+    }
+
+    private fun buildUserMessage(newSegment: String, currentBuffer: String, modeContext: String): String {
+        return buildString {
             append("当前缓冲区内容：")
             if (currentBuffer.isEmpty()) append("（空）") else append(currentBuffer)
             append("\n\n新语音片段：")
@@ -40,18 +107,13 @@ class VoiceIntentProcessor(
                 append(modeContext)
             }
         }
-
-        val response = llmProvider.complete(systemPrompt, userMessage)
-        return parseResponse(response)
     }
 
     private fun parseResponse(response: String): ProcessingResult {
-        // 尝试直接解析
         try {
             return json.decodeFromString<ProcessingResult>(response.trim())
         } catch (_: Exception) {}
 
-        // 提取 JSON 子串（处理 LLM 返回额外文字的情况）
         val jsonStr = extractJSON(response)
         if (jsonStr != null) {
             try {
@@ -59,30 +121,25 @@ class VoiceIntentProcessor(
             } catch (_: Exception) {}
         }
 
-        // Fallback：字符串搜索
         return fallbackParse(response)
     }
 
     private fun extractJSON(text: String): String? {
-        // 去掉 markdown 代码块
         val cleaned = text
             .replace(Regex("```json\\s*"), "")
             .replace(Regex("```\\s*"), "")
             .trim()
-
         val start = cleaned.indexOf('{')
         val end = cleaned.lastIndexOf('}')
-        if (start >= 0 && end > start) {
-            return cleaned.substring(start, end + 1)
-        }
+        if (start >= 0 && end > start) return cleaned.substring(start, end + 1)
         return null
     }
 
     private fun fallbackParse(text: String): ProcessingResult {
-        // 从文本中搜索 intent 和 result_text
         val intentMatch = Regex(""""intent"\s*:\s*"(\w+)"""").find(text)
         val resultMatch = Regex(""""result_text"\s*:\s*"((?:[^"\\]|\\.)*)"""").find(text)
         val explainMatch = Regex(""""explanation"\s*:\s*"((?:[^"\\]|\\.)*)"""").find(text)
+        val modeMatch = Regex(""""suggested_mode"\s*:\s*"([^"]+)"""").find(text)
 
         val intentStr = intentMatch?.groupValues?.get(1)
             ?: throw ProcessingError.InvalidJSON(text)
@@ -92,14 +149,12 @@ class VoiceIntentProcessor(
             ?: ""
 
         val intent = when (intentStr) {
-            "content" -> com.tinybear.chatyinput.model.VoiceIntent.CONTENT
-            "edit" -> com.tinybear.chatyinput.model.VoiceIntent.EDIT
-            "send" -> com.tinybear.chatyinput.model.VoiceIntent.SEND
-            "undo" -> com.tinybear.chatyinput.model.VoiceIntent.UNDO
+            "content" -> VoiceIntent.CONTENT
+            "edit" -> VoiceIntent.EDIT
+            "send" -> VoiceIntent.SEND
+            "undo" -> VoiceIntent.UNDO
             else -> throw ProcessingError.InvalidJSON(text)
         }
-
-        val modeMatch = Regex(""""suggested_mode"\s*:\s*"([^"]+)"""").find(text)
 
         return ProcessingResult(
             intent = intent,

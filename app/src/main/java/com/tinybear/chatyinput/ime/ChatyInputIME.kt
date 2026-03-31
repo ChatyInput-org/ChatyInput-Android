@@ -65,6 +65,8 @@ class ChatyInputIME : InputMethodService(),
     private var currentModeName = mutableStateOf("")
     // 可用 Mode 列表（供 IME 下拉选择器）
     private var availableModes = mutableStateOf<List<Pair<String?, String>>>(emptyList())
+    // Smart/Strict 编辑模式
+    private var isSmartEdit = mutableStateOf(false)
 
     // 收集 Pipeline/VAD StateFlow 的协程
     private var collectorJob: Job? = null
@@ -147,6 +149,7 @@ class ChatyInputIME : InputMethodService(),
 
         // 检查录制模式
         isVadMode.value = config.recordingMode == "vad"
+        isSmartEdit.value = config.smartEditMode
     }
 
     override fun onCreateInputView(): View {
@@ -187,6 +190,18 @@ class ChatyInputIME : InputMethodService(),
         val composeView = ComposeView(this)
         composeView.setContent {
             com.tinybear.chatyinput.ui.ChatyInputTheme {
+            // 每 500ms 检查 pending buffer（主 App 写入时即时响应）
+            androidx.compose.runtime.LaunchedEffect(Unit) {
+                while (true) {
+                    val pending = AppConfig.pendingBuffer
+                    if (pending != null) {
+                        AppConfig.pendingBuffer = null
+                        buffer.value = pending
+                        pipeline?.buffer = pending
+                    }
+                    kotlinx.coroutines.delay(500)
+                }
+            }
             val bufferValue by buffer
             val recordingValue by isRecording
             val editModeValue by isEditMode
@@ -200,6 +215,7 @@ class ChatyInputIME : InputMethodService(),
             val holdMode = config.holdToRecord
             val modeName by currentModeName
             val modesList by availableModes
+            val smartEdit by isSmartEdit
 
             KeyboardView(
                 buffer = bufferValue,
@@ -234,7 +250,14 @@ class ChatyInputIME : InputMethodService(),
                 bottomPaddingDp = navBarDp,
                 currentModeName = modeName,
                 availableModes = modesList,
-                onModeSelected = { modeId -> onModeSelected(modeId) }
+                onModeSelected = { modeId -> onModeSelected(modeId) },
+                isSmartEdit = smartEdit,
+                onToggleSmartEdit = {
+                    val newValue = !isSmartEdit.value
+                    isSmartEdit.value = newValue
+                    AppConfig(applicationContext).smartEditMode = newValue
+                    android.util.Log.i("ChatyInputIME", "Smart edit toggled: $newValue")
+                }
             )
             } // end ChatyInputTheme
         }
@@ -251,6 +274,24 @@ class ChatyInputIME : InputMethodService(),
         pipeline?.currentAppPackage = pkg
         // 更新 Mode 指示器和可用 Mode 列表
         updateModeState(config, pkg)
+        // 检查 pending buffer
+        checkPendingBuffer()
+    }
+
+    // 键盘窗口显示时也检查 pending buffer
+    override fun onWindowShown() {
+        super.onWindowShown()
+        checkPendingBuffer()
+    }
+
+    private fun checkPendingBuffer() {
+        val pending = AppConfig.pendingBuffer
+        if (pending != null) {
+            AppConfig.pendingBuffer = null
+            buffer.value = pending
+            pipeline?.buffer = pending
+            android.util.Log.i("ChatyInputIME", "Loaded pending buffer: ${pending.take(50)}...")
+        }
     }
 
     // 更新 Mode 相关 UI 状态
@@ -369,6 +410,7 @@ class ChatyInputIME : InputMethodService(),
     // 开始录音（长按模式 + 切换模式共用，PTT/Toggle 模式）
     private fun startRecording() {
         android.util.Log.i("ChatyInputIME", "startRecording called")
+        checkPendingBuffer() // 录音前检查是否有待加载的 buffer
         errorMessage.value = null
 
         // 检查麦克风权限

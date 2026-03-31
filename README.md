@@ -3,68 +3,146 @@
 > Voice input, reimagined. Speak naturally — AI handles the rest.
 
 [![License: GPL-3.0](https://img.shields.io/badge/License-GPL%203.0-blue.svg)](LICENSE)
-[![Platform: Android](https://img.shields.io/badge/Platform-Android-green.svg)](https://github.com/ChatyInput-org/ChatyInput-Android)
+[![Platform: Android](https://img.shields.io/badge/Platform-Android%208.0+-green.svg)](https://github.com/ChatyInput-org/ChatyInput-Android)
 [![Website](https://img.shields.io/badge/Web-chatyinput.com-orange.svg)](https://chatyinput.com)
 
-## What is ChatyInput?
+ChatyInput is an open-source voice input keyboard that uses AI to understand what you mean — not just what you say. Dictate content, edit text, calculate totals, switch languages, and send messages, all by voice. The AI classifies every voice segment as an intent and acts accordingly.
 
-ChatyInput is an open-source voice input app that goes beyond simple speech-to-text. It uses an LLM to understand your **intent** — whether you're dictating new content, editing existing text, or sending a message. No mode switching, no buttons to toggle. Just speak naturally.
+---
 
-## Features
+## Key Features
 
-- **LLM Intent Recognition** — AI classifies every voice segment as content, edit, send, or undo. No manual mode switching.
-- **Bring Your Own Provider** — Works with OpenAI, Claude, Ollama, vLLM, or any OpenAI-compatible endpoint. Self-host your own models if you want.
-- **Hands-free VAD Mode** — Local voice activity detection powered by Silero VAD. Auto-detects when you start and stop speaking.
-- **Parallel Recording** — Record the next segment while the previous one is still processing. STT runs in parallel, LLM processes as a queue.
-- **Undo** — Say "undo" to revert the buffer to its previous state. Up to 30 levels of history.
-- **Custom Dictionary** — Add names, jargon, and domain terms. AI prioritizes phonetically similar matches from your dictionary.
-- **Privacy First** — No account, no telemetry, no data collection. API keys encrypted locally. Audio stored on-device only.
-- **Full IME Keyboard** — Works as a system keyboard inside any app. PTT button, edit button, buffer display, and send — all inline.
+**Voice Intelligence**
+- 4 intents: content / edit / send / undo — AI classifies automatically
+- Smart mode: AI proactively edits, calculates, and fills in information
+- Strict mode: AI waits for explicit commands before modifying text
+- Parallel recording: start the next segment while the previous one processes
 
-## How It Works
+**Smart Modes**
+- AI auto-selects mode based on app, location, and content
+- 4 built-in templates: Business Email, Casual Chat, Technical Docs, Meeting Notes
+- Custom trigger conditions per mode ("use when in email apps")
+- App binding with optional force lock
+- GPS location triggers with NEARBY detection
 
-1. **Speak** — Hold the PTT button and speak naturally in any language
-2. **Process** — Your STT model transcribes, then the LLM classifies intent and updates the buffer
-3. **Edit** *(optional)* — Say "change 3 PM to 5 PM" using the voice button and the AI detects it as an edit automatically. For more precise control, use the dedicated edit button which uses a specialized prompt focused on editing.
-4. **Send** — Say "send" and the text goes directly into the active app
+**Multi-turn Tool Use**
+- LLM function calling (OpenAI + Claude)
+- `switch_mode` tool for mid-conversation mode switching
+- Extensible tool registry for future tools
+- Configurable max rounds (1-5)
+
+**Bring Your Own Provider**
+- OpenAI (GPT-4o, GPT-4o-mini)
+- Anthropic Claude (Sonnet, Haiku)
+- Any OpenAI-compatible endpoint (Ollama, vLLM, LM Studio)
+- STT: OpenAI Whisper or any Whisper-compatible API
+
+**Privacy**
+- No account, no telemetry, no data collection
+- API keys encrypted locally (EncryptedSharedPreferences)
+- Audio stored on-device only
+- GPS location opt-in, never uploaded
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                   Android IME                    │
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌─────────────┐ │
+│  │ Mode │  │ Rec  │  │ Edit │  │ Send/Delete │ │
+│  └──┬───┘  └──┬───┘  └──┬───┘  └─────────────┘ │
+│     │         │         │                        │
+│     ▼         ▼         ▼                        │
+│  ┌─────────────────────────────────────────────┐ │
+│  │           RecordingPipeline                  │ │
+│  │  Audio → [STT parallel] → [LLM queue]       │ │
+│  │           ↓                    ↓             │ │
+│  │       Transcript     Intent + Result Text    │ │
+│  └─────────────────────────────────────────────┘ │
+│     │              │                │            │
+│     ▼              ▼                ▼            │
+│  ModeResolver   VoiceIntent    ToolExecutor      │
+│  (app+GPS+AI)   Processor      (switch_mode)     │
+│                 (multi-turn)                      │
+└─────────────────────────────────────────────────┘
+```
+
+### Project Structure
+
+```
+app/src/main/java/com/tinybear/chatyinput/
+├── config/                     # Configuration & prompts
+│   ├── AppConfig.kt            # All settings (encrypted storage)
+│   ├── LanguageConfig.kt       # 10-language system prompts
+│   ├── LocaleHelper.kt         # Runtime locale switching
+│   └── ModePrompts.kt          # Mode templates + Smart/Strict/Location prompts
+│
+├── ime/                        # Input Method Editor
+│   ├── ChatyInputIME.kt        # IME service (lifecycle, pipeline, VAD)
+│   └── KeyboardView.kt         # Compose keyboard UI
+│
+├── model/                      # Data models
+│   ├── Mode.kt                 # Mode + LocationTrigger + AppModeMapping
+│   ├── ToolModels.kt           # ChatMessage, ToolCall, LLMResponse
+│   ├── ProcessingResult.kt     # LLM response (intent, text, suggestedMode)
+│   ├── VoiceIntent.kt          # content | edit | send | undo
+│   └── HistoryEntry.kt         # Voice input history record
+│
+├── service/                    # Core services
+│   ├── RecordingPipeline.kt    # STT parallel + LLM queue orchestration
+│   ├── VoiceIntentProcessor.kt # Multi-turn tool use loop
+│   ├── VadService.kt           # Silero VAD v4 (ONNX Runtime)
+│   ├── ModeResolver.kt         # Mode priority resolution + context building
+│   ├── ModeManager.kt          # Mode CRUD + app mappings
+│   ├── LocationProvider.kt     # FusedLocationProvider + Haversine distance
+│   ├── ToolRegistry.kt         # Extensible tool definitions
+│   ├── ToolExecutor.kt         # Tool dispatch + side effects
+│   ├── LLMProvider.kt          # Interface (complete + completeWithTools)
+│   ├── OpenAIProvider.kt       # OpenAI + function calling
+│   ├── ClaudeProvider.kt       # Claude + tool use
+│   ├── STTProvider.kt          # STT interface
+│   ├── WhisperAPIProvider.kt   # Whisper API (+ anti-hallucination)
+│   ├── AudioCaptureService.kt  # MediaRecorder + PCM→M4A conversion
+│   ├── HistoryManager.kt       # JSON history persistence
+│   └── tools/
+│       └── SwitchModeTool.kt   # switch_mode tool definition
+│
+└── ui/                         # Jetpack Compose screens
+    ├── MainActivity.kt         # 5-tab navigation + back handling
+    ├── VoiceScreen.kt          # Test area with Load to Buffer
+    ├── HistoryScreen.kt        # Voice input history
+    ├── DictionaryScreen.kt     # Custom words management
+    ├── ModeListScreen.kt       # Modes tab (toggles, selection, location)
+    ├── ModeEditorScreen.kt     # Mode editor (triggers, apps, locations)
+    ├── SettingsScreen.kt       # All configuration
+    └── Theme.kt                # Material3 theme
+```
+
+---
 
 ## Supported Languages
 
-ChatyInput's UI and prompts are available in **10 languages**:
+**UI & prompts:** English, French, Spanish, Chinese (Simplified & Traditional), Hindi, Arabic, Portuguese, Japanese, Korean
 
-English, French, Spanish, Chinese (Simplified), Chinese (Traditional), Hindi, Arabic, Portuguese, Japanese, Korean
+**Speech recognition:** 99 languages via Whisper
 
-Speech recognition supports **99 languages** via Whisper — including German, Italian, Russian, Turkish, Vietnamese, Thai, Indonesian, Dutch, Polish, Ukrainian, and many more. [Full list](https://github.com/openai/whisper#available-models-and-languages).
+---
 
 ## Download
 
-Download the latest APK from [GitHub Releases](https://github.com/ChatyInput-org/ChatyInput-Android/releases).
+Latest APK: [GitHub Releases](https://github.com/ChatyInput-org/ChatyInput-Android/releases)
 
-No Play Store required. Enable "Install from unknown sources" in your device settings.
+No Play Store required. Enable "Install from unknown sources" in device settings.
 
 ## Quick Start
 
 1. Install the APK
-2. Open ChatyInput → **Settings** → configure your STT and LLM API keys
-3. Go to Android **Settings → System → Languages & Input → On-screen keyboard** → enable ChatyInput
-4. In any app, switch to the ChatyInput keyboard
-5. Hold the mic button and speak
-
-## Configuration
-
-### STT Providers
-- **OpenAI Whisper** — Best accuracy, especially for multilingual input
-- **Whisper Compatible** — Any endpoint that implements the Whisper API (e.g., Groq, local Whisper)
-
-### LLM Providers
-- **OpenAI** — GPT-4o, GPT-4o-mini, etc.
-- **Anthropic Claude** — Sonnet, Haiku, etc.
-- **OpenAI Compatible** — Ollama, vLLM, LM Studio, or any OpenAI-compatible endpoint
-
-### Recording Modes
-- **PTT (Push-to-Talk)** — Hold to record, release to stop
-- **Toggle** — Tap to start, tap to stop
-- **Hands-free (VAD)** — Auto-detects speech, tap to start/stop listening
+2. Open ChatyInput > **Settings** > configure STT and LLM API keys
+3. Android **Settings > System > Languages & Input > On-screen keyboard** > enable ChatyInput
+4. Switch to ChatyInput keyboard in any app
+5. Tap mic and speak
 
 ## Building from Source
 
@@ -74,19 +152,24 @@ cd ChatyInput-Android
 ./gradlew assembleDebug
 ```
 
-The APK will be at `app/build/outputs/apk/debug/app-debug.apk`.
+APK output: `app/build/outputs/apk/debug/app-debug.apk`
 
 ## Tech Stack
 
-- Kotlin / Jetpack Compose
-- OkHttp for networking
-- EncryptedSharedPreferences for secure config storage
-- ONNX Runtime + Silero VAD v4 for voice activity detection
-- kotlinx.serialization for JSON parsing
+| Component | Technology |
+|-----------|-----------|
+| UI | Kotlin / Jetpack Compose |
+| Networking | OkHttp 4.12 |
+| Serialization | kotlinx.serialization 1.7 |
+| Voice Detection | ONNX Runtime 1.17 + Silero VAD v4 |
+| Location | Google Play Services Location 21.1 |
+| Security | EncryptedSharedPreferences |
+| Async | Kotlin Coroutines 1.9 |
+| Target | Android 8.0+ (API 26) / SDK 35 |
 
 ## Roadmap
 
-See the full roadmap at [chatyinput.com/#roadmap](https://chatyinput.com/#roadmap).
+See [chatyinput.com/#roadmap](https://chatyinput.com/#roadmap)
 
 ## License
 

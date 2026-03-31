@@ -8,6 +8,13 @@
     <string name="tab_modes">模式</string>
     <string name="tab_settings">设置</string>
 
+    <!-- Home screen -->
+    <string name="home_title">测试区域</string>
+    <string name="home_description">在这里切换到 ChatyInput 键盘，测试你的语音输入、提示词和模式。</string>
+    <string name="home_text_area_hint">在这里输入或使用语音输入…</string>
+    <string name="home_load_to_buffer">加载到缓冲区</string>
+    <string name="home_loaded_to_buffer">已加载到键盘缓冲区。切换到 ChatyInput 键盘继续编辑。</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">文本缓冲区</string>
     <string name="btn_record">录音</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">静音阈值</string>
     <string name="settings_system_prompt">系统提示词</string>
     <string name="settings_reset_default">恢复默认</string>
+    <string name="settings_smart_edit_prompt">智能编辑提示词</string>
+    <string name="settings_smart_edit_prompt_desc">启用智能编辑模式时附加的提示词</string>
+    <string name="settings_strict_edit_prompt">严格编辑提示词</string>
+    <string name="settings_strict_edit_prompt_desc">启用严格编辑模式时附加的提示词</string>
     <string name="btn_save">保存</string>
     <string name="settings_saved">设置已保存。</string>
+    <string name="settings_tool_use">工具调用</string>
+    <string name="settings_max_tool_rounds">最大工具轮次</string>
+    <string name="settings_max_tool_rounds_desc">每段语音处理的最大工具调用次数</string>
     <string name="settings_history">历史记录</string>
     <string name="settings_retention">保留时间</string>
     <string name="settings_clear_all">清空所有历史</string>

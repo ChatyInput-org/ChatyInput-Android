@@ -315,3 +315,100 @@ object ModeSelectionPrompts {
         }
     }
 }
+
+// Smart Edit 模式 prompt 后缀
+object SmartEditPrompts {
+    fun getSuffix(language: AppLanguage): String {
+        val resolved = if (language == AppLanguage.AUTO) AppLanguage.detectSystem() else language
+        return when (resolved) {
+            AppLanguage.ZH_CN -> """Smart 模式已启用，你可以更主动地帮助用户：
+1. 主动编辑：如果语音内容暗示需要修改已有文字（修正、补充、调整、改写等），直接当作编辑命令处理，返回修改后的完整缓冲区全文，不需要明确编辑指令。
+2. 计算：如果用户提到数学计算（如"算一下总数"、"加起来多少"），直接计算结果并写入文中。
+3. 信息补充：如果用户提到需要查找的信息（如"今天的日期"、"这个词的意思"），用你的知识直接补充到文中。
+4. 格式优化：如果内容明显需要格式调整（列表、段落、标点），主动优化。
+5. 工具调用：你可以使用 switch_mode 工具切换语音输入模式。如果根据上下文判断需要切换，主动调用。"""
+
+            AppLanguage.ZH_TW -> """Smart 模式已啟用，你可以更主動地幫助用戶：
+1. 主動編輯：如果語音內容暗示需要修改已有文字（修正、補充、調整、改寫等），直接當作編輯命令處理，返回修改後的完整緩衝區全文，不需要明確編輯指令。
+2. 計算：如果用戶提到數學計算（如「算一下總數」、「加起來多少」），直接計算結果並寫入文中。
+3. 資訊補充：如果用戶提到需要查找的資訊（如「今天的日期」、「這個詞的意思」），用你的知識直接補充到文中。
+4. 格式優化：如果內容明顯需要格式調整（列表、段落、標點），主動優化。
+5. 工具調用：你可以使用 switch_mode 工具切換語音輸入模式。如果根據上下文判斷需要切換，主動調用。"""
+
+            AppLanguage.JA -> """Smartモードが有効です。より積極的にユーザーを支援できます：
+1. 積極的編集：音声内容がテキスト修正を示唆する場合、明示的コマンドなしで編集として処理し、修正後のバッファ全文を返してください。
+2. 計算：数学計算が言及された場合（「合計を計算して」「足すといくら」など）、直接計算してテキストに書き込んでください。
+3. 情報補完：ユーザーが情報を求めた場合（「今日の日付」「この言葉の意味」など）、知識で直接補完してください。
+4. フォーマット最適化：リスト、段落、句読点などの調整が必要な場合、積極的に最適化してください。
+5. ツール呼び出し：switch_mode ツールを使って音声入力モードを切り替えられます。文脈から切替が必要と判断したら積極的に呼び出してください。"""
+
+            AppLanguage.KO -> """Smart 모드가 활성화되었습니다. 더 적극적으로 사용자를 도울 수 있습니다:
+1. 적극적 편집: 음성 내용이 텍스트 수정을 암시하면 명시적 명령 없이 편집으로 처리하고 수정된 전체 버퍼를 반환하세요.
+2. 계산: 수학 계산이 언급되면(예: "합계 계산해줘", "다 합치면 얼마") 직접 계산하여 텍스트에 작성하세요.
+3. 정보 보충: 사용자가 정보를 요청하면(예: "오늘 날짜", "이 단어의 뜻") 지식으로 직접 보충하세요.
+4. 형식 최적화: 목록, 단락, 구두점 등의 조정이 필요하면 적극적으로 최적화하세요.
+5. 도구 호출: switch_mode 도구를 사용하여 음성 입력 모드를 전환할 수 있습니다. 컨텍스트에 따라 전환이 필요하면 적극적으로 호출하세요."""
+
+            AppLanguage.FR -> """Mode Smart activé. Vous pouvez aider l'utilisateur plus activement :
+1. Édition proactive : si le contenu vocal suggère une modification du texte, traitez-le comme une édition sans commande explicite.
+2. Calcul : si l'utilisateur mentionne un calcul (ex: « calculer le total », « combien ça fait »), calculez et insérez le résultat.
+3. Complément d'information : si l'utilisateur demande une info (ex: « la date d'aujourd'hui »), complétez avec vos connaissances.
+4. Optimisation du format : si le contenu nécessite des ajustements (listes, paragraphes, ponctuation), optimisez proactivement.
+5. Appel d'outils : vous pouvez utiliser l'outil switch_mode pour changer de mode de saisie vocale. Si le contexte le justifie, appelez-le proactivement."""
+
+            AppLanguage.ES -> """Modo Smart activado. Puedes ayudar al usuario más activamente:
+1. Edición proactiva: si el contenido de voz sugiere modificar texto, trátalo como edición sin comando explícito.
+2. Cálculo: si el usuario menciona un cálculo (ej: "calcular el total", "cuánto suma"), calcula e inserta el resultado.
+3. Información: si el usuario pide información (ej: "la fecha de hoy"), completa con tus conocimientos.
+4. Formato: si el contenido necesita ajustes (listas, párrafos, puntuación), optimiza proactivamente.
+5. Llamada de herramientas: puedes usar la herramienta switch_mode para cambiar el modo de entrada de voz. Si el contexto lo justifica, llámala proactivamente."""
+
+            AppLanguage.HI -> """Smart मोड सक्रिय है। आप उपयोगकर्ता की अधिक सक्रिय रूप से मदद कर सकते हैं:
+1. सक्रिय संपादन: यदि वॉइस सामग्री टेक्स्ट संशोधन का संकेत देती है, बिना स्पष्ट कमांड के संपादन के रूप में संसाधित करें।
+2. गणना: यदि गणित गणना का उल्लेख हो (जैसे "कुल जोड़ दो", "सब मिलाकर कितना"), सीधे गणना करें और परिणाम लिखें।
+3. जानकारी: यदि उपयोगकर्ता जानकारी माँगे (जैसे "आज की तारीख"), अपने ज्ञान से पूरा करें।
+4. फ़ॉर्मेट: यदि सामग्री को समायोजन की आवश्यकता हो (सूची, पैराग्राफ, विराम चिह्न), सक्रिय रूप से अनुकूलित करें।
+5. टूल कॉल: आप switch_mode टूल का उपयोग करके वॉइस इनपुट मोड बदल सकते हैं। यदि संदर्भ से आवश्यक लगे, सक्रिय रूप से कॉल करें।"""
+
+            AppLanguage.AR -> """وضع Smart مُفعّل. يمكنك مساعدة المستخدم بشكل أكثر فعالية:
+1. تحرير استباقي: إذا أشار المحتوى الصوتي إلى تعديل النص، عالجه كتحرير بدون أمر صريح.
+2. حساب: إذا ذُكرت عملية حسابية (مثل "احسب المجموع"، "كم يصبح الإجمالي")، احسب وأدرج النتيجة.
+3. معلومات: إذا طلب المستخدم معلومة (مثل "تاريخ اليوم")، أكمل من معرفتك.
+4. تنسيق: إذا احتاج المحتوى لتعديلات (قوائم، فقرات، ترقيم)، حسّن بشكل استباقي.
+5. استدعاء الأدوات: يمكنك استخدام أداة switch_mode لتغيير وضع الإدخال الصوتي. إذا كان السياق يستدعي ذلك، استدعها بشكل استباقي."""
+
+            AppLanguage.PT -> """Modo Smart ativado. Você pode ajudar o usuário mais ativamente:
+1. Edição proativa: se o conteúdo de voz sugerir modificação do texto, trate como edição sem comando explícito.
+2. Cálculo: se o usuário mencionar um cálculo (ex: "calcular o total", "quanto dá somando"), calcule e insira o resultado.
+3. Informação: se o usuário pedir informação (ex: "a data de hoje"), complete com seu conhecimento.
+4. Formato: se o conteúdo precisar de ajustes (listas, parágrafos, pontuação), otimize proativamente.
+5. Chamada de ferramentas: você pode usar a ferramenta switch_mode para mudar o modo de entrada de voz. Se o contexto justificar, chame-a proativamente."""
+
+            else -> """Smart mode enabled. You can help the user more actively:
+1. Proactive editing: if the voice content implies modifying existing text, treat it as an edit command without requiring an explicit edit instruction.
+2. Calculation: if the user mentions a math calculation (e.g., "calculate the total", "how much does it add up to"), compute the result and write it into the text.
+3. Information: if the user asks for information (e.g., "today's date", "meaning of this word"), fill in from your knowledge directly.
+4. Format optimization: if the content needs formatting adjustments (lists, paragraphs, punctuation), optimize proactively.
+5. Tool calls: you can use the switch_mode tool to change the voice input mode. If the context warrants it, call it proactively."""
+        }
+    }
+}
+
+// Strict Edit 模式 prompt 后缀
+object StrictEditPrompts {
+    fun getSuffix(language: AppLanguage): String {
+        val resolved = if (language == AppLanguage.AUTO) AppLanguage.detectSystem() else language
+        return when (resolved) {
+            AppLanguage.ZH_CN -> "严格模式：你要非常确定用户是真实需要修改、发送或撤销才执行对应操作。不要主动修改用户的文字，除非用户给出了非常明确的编辑指令。如果不确定，当作普通内容输入处理。 工具调用（如 switch_mode）仅在用户明确要求时使用。"
+            AppLanguage.ZH_TW -> "嚴格模式：你要非常確定用戶是真實需要修改、發送或撤銷才執行對應操作。不要主動修改用戶的文字，除非用戶給出了非常明確的編輯指令。如果不確定，當作普通內容輸入處理。 工具調用（如 switch_mode）僅在用戶明確要求時使用。"
+            AppLanguage.JA -> "厳格モード：ユーザーが本当に編集・送信・取り消しを望んでいると非常に確信できる場合のみ実行してください。明確な編集コマンドがない限り、ユーザーのテキストを自発的に修正しないでください。不確かな場合は通常のコンテンツ入力として処理してください。 ツール呼び出し（switch_mode など）はユーザーが明示的に要求した場合のみ使用してください。"
+            AppLanguage.KO -> "엄격 모드: 사용자가 정말로 편집, 전송 또는 실행취소를 원한다고 매우 확신할 때만 해당 작업을 수행하세요. 명확한 편집 명령이 없으면 사용자의 텍스트를 자발적으로 수정하지 마세요. 불확실하면 일반 콘텐츠 입력으로 처리하세요. 도구 호출(switch_mode 등)은 사용자가 명시적으로 요청한 경우에만 사용하세요."
+            AppLanguage.FR -> "Mode strict : n'exécutez les opérations d'édition, d'envoi ou d'annulation que si vous êtes très sûr de l'intention de l'utilisateur. Ne modifiez pas le texte sans commande explicite. En cas de doute, traitez comme une entrée de contenu normal. Les appels d'outils (comme switch_mode) ne doivent être utilisés que sur demande explicite de l'utilisateur."
+            AppLanguage.ES -> "Modo estricto: solo ejecute edición, envío o deshacer cuando esté muy seguro de la intención del usuario. No modifique el texto sin un comando explícito. En caso de duda, trate como entrada de contenido normal. Las llamadas de herramientas (como switch_mode) solo deben usarse cuando el usuario lo solicite explícitamente."
+            AppLanguage.HI -> "सख्त मोड: संपादन, भेजने या पूर्ववत करने की कार्रवाई तभी करें जब आप उपयोगकर्ता के इरादे के बारे में बहुत निश्चित हों। स्पष्ट कमांड के बिना टेक्स्ट को स्वयं न बदलें। अनिश्चित होने पर सामान्य सामग्री इनपुट के रूप में संसाधित करें। टूल कॉल (जैसे switch_mode) केवल उपयोगकर्ता के स्पष्ट अनुरोध पर ही उपयोग करें।"
+            AppLanguage.AR -> "وضع صارم: لا تنفذ عمليات التحرير أو الإرسال أو التراجع إلا إذا كنت متأكداً جداً من نية المستخدم. لا تعدّل النص بدون أمر صريح. في حالة الشك، عالج كإدخال محتوى عادي. استدعاء الأدوات (مثل switch_mode) يجب استخدامها فقط عند طلب المستخدم صراحةً."
+            AppLanguage.PT -> "Modo estrito: só execute edição, envio ou desfazer quando tiver muita certeza da intenção do usuário. Não modifique o texto sem comando explícito. Em caso de dúvida, trate como entrada de conteúdo normal. Chamadas de ferramentas (como switch_mode) devem ser usadas apenas quando o usuário solicitar explicitamente."
+            else -> "Strict mode: only execute edit, send, or undo operations when you are very confident about the user's intent. Do not modify text without an explicit command. When in doubt, treat as normal content input. Tool calls (like switch_mode) should only be used when the user explicitly requests them."
+        }
+    }
+}

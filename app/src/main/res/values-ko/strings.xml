@@ -8,6 +8,13 @@
     <string name="tab_modes">모드</string>
     <string name="tab_settings">설정</string>
 
+    <!-- Home screen -->
+    <string name="home_title">테스트 영역</string>
+    <string name="home_description">여기서 ChatyInput 키보드로 전환하여 음성 입력, 프롬프트, 모드를 테스트하세요.</string>
+    <string name="home_text_area_hint">여기에 입력하거나 음성 입력 사용…</string>
+    <string name="home_load_to_buffer">버퍼에 로드</string>
+    <string name="home_loaded_to_buffer">키보드 버퍼에 로드되었습니다. ChatyInput 키보드로 전환하여 편집을 계속하세요.</string>
+
     <!-- Voice screen -->
     <string name="text_buffer">텍스트 버퍼</string>
     <string name="btn_record">녹음</string>
@@ -43,8 +50,15 @@
     <string name="settings_silence_threshold">무음 임계값</string>
     <string name="settings_system_prompt">시스템 프롬프트</string>
     <string name="settings_reset_default">기본값으로 재설정</string>
+    <string name="settings_smart_edit_prompt">스마트 편집 프롬프트</string>
+    <string name="settings_smart_edit_prompt_desc">스마트 편집 모드 활성화 시 추가되는 프롬프트</string>
+    <string name="settings_strict_edit_prompt">엄격 편집 프롬프트</string>
+    <string name="settings_strict_edit_prompt_desc">엄격 편집 모드 활성화 시 추가되는 프롬프트</string>
     <string name="btn_save">저장</string>
     <string name="settings_saved">설정이 저장되었습니다.</string>
+    <string name="settings_tool_use">도구 사용</string>
+    <string name="settings_max_tool_rounds">최대 도구 라운드</string>
+    <string name="settings_max_tool_rounds_desc">음성 세그먼트당 최대 도구 호출 횟수</string>
     <string name="settings_history">기록</string>
     <string name="settings_retention">보관 기간</string>
     <string name="settings_clear_all">모든 기록 삭제</string>
