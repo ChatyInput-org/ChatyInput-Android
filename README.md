@@ -175,6 +175,8 @@ See [chatyinput.com/#roadmap](https://chatyinput.com/#roadmap)
 
 [GPL-3.0](LICENSE)
 
+The ChatyInput name, logo, and branding assets are proprietary to Thinkroid Technology Ltd. and may not be used without permission.
+
 ## Links
 
 - **Website:** [chatyinput.com](https://chatyinput.com)
