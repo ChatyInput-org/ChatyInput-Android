@@ -14,22 +14,34 @@ ChatyInput is an open-source voice input keyboard that uses AI to understand wha
 
 **Voice Intelligence**
 - 4 intents: content / edit / send / undo — AI classifies automatically
-- Smart mode: AI proactively edits, calculates, and fills in information
+- Smart mode: AI proactively edits, calculates, fills in information, and optimizes formatting
 - Strict mode: AI waits for explicit commands before modifying text
+- Smart/Strict toggle directly on the keyboard
+- All prompts (System, Edit, Smart, Strict) fully customizable in Settings
 - Parallel recording: start the next segment while the previous one processes
 
 **Smart Modes**
-- AI auto-selects mode based on app, location, and content
+- AI auto-selects mode based on app, GPS location, and input content
 - 4 built-in templates: Business Email, Casual Chat, Technical Docs, Meeting Notes
 - Custom trigger conditions per mode ("use when in email apps")
-- App binding with optional force lock
-- GPS location triggers with NEARBY detection
+- App binding with installed app picker + optional force lock
+- GPS location triggers with "Use Current Location" and NEARBY detection
+- Dynamic language switching based on GPS (opt-in, system language unchanged)
+- IME mode button: Auto (AI decides) or lock a specific mode
 
 **Multi-turn Tool Use**
-- LLM function calling (OpenAI + Claude)
+- LLM function calling: OpenAI function calling + Claude tool use
 - `switch_mode` tool for mid-conversation mode switching
-- Extensible tool registry for future tools
-- Configurable max rounds (1-5)
+- Extensible tool registry for adding more tools
+- Configurable max rounds (1-5) in Settings
+- Graceful fallback for providers without tool support
+
+**Voice Activity Detection**
+- Silero VAD v4 via ONNX Runtime — local, no cloud
+- 3 recording modes: PTT (hold) / Toggle (tap) / Hands-free (VAD)
+- Adjustable silence threshold (0.5s - 3.0s)
+- Flush on stop: manually stopping VAD submits remaining speech (no lost audio)
+- 5-layer Whisper anti-hallucination: VAD threshold, speech ratio, min duration + RMS, verbose_json params, no_speech_prob filter
 
 **Bring Your Own Provider**
 - OpenAI (GPT-4o, GPT-4o-mini)
@@ -48,25 +60,36 @@ ChatyInput is an open-source voice input keyboard that uses AI to understand wha
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────┐
-│                   Android IME                    │
-│  ┌──────┐  ┌──────┐  ┌──────┐  ┌─────────────┐ │
-│  │ Mode │  │ Rec  │  │ Edit │  │ Send/Delete │ │
-│  └──┬───┘  └──┬───┘  └──┬───┘  └─────────────┘ │
-│     │         │         │                        │
-│     ▼         ▼         ▼                        │
-│  ┌─────────────────────────────────────────────┐ │
-│  │           RecordingPipeline                  │ │
-│  │  Audio → [STT parallel] → [LLM queue]       │ │
-│  │           ↓                    ↓             │ │
-│  │       Transcript     Intent + Result Text    │ │
-│  └─────────────────────────────────────────────┘ │
-│     │              │                │            │
-│     ▼              ▼                ▼            │
-│  ModeResolver   VoiceIntent    ToolExecutor      │
-│  (app+GPS+AI)   Processor      (switch_mode)     │
-│                 (multi-turn)                      │
-└─────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                       Android IME                         │
+│  ┌────────┐  ┌────────┐  ┌──────┐  ┌──────┐  ┌───────┐ │
+│  │  Mode  │  │Smart/  │  │ Rec  │  │ Edit │  │ Send/ │ │
+│  │(Auto/  │  │Strict  │  │(PTT/ │  │      │  │Delete │ │
+│  │ Lock)  │  │Toggle  │  │VAD)  │  │      │  │       │ │
+│  └───┬────┘  └───┬────┘  └──┬───┘  └──┬───┘  └───────┘ │
+│      │           │          │         │                   │
+│      ▼           ▼          ▼         ▼                   │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │              RecordingPipeline                      │  │
+│  │                                                     │  │
+│  │  Audio ──→ [VAD filter] ──→ [STT parallel]         │  │
+│  │                                    ↓                │  │
+│  │            [Smart/Strict prompt] + [Mode suffix]    │  │
+│  │            + [Location context] + [Mode context]    │  │
+│  │                        ↓                            │  │
+│  │              [LLM queue + Tool Use loop]            │  │
+│  │                        ↓                            │  │
+│  │              Intent + Result Text + Side Effects    │  │
+│  └────────────────────────────────────────────────────┘  │
+│      │              │                │                    │
+│      ▼              ▼                ▼                    │
+│  ModeResolver   VoiceIntent     ToolExecutor              │
+│  (manual lock   Processor       (switch_mode)             │
+│   > app forced  (multi-turn                               │
+│   > LLM suggest  max 1-5                                  │
+│   > app mapping  rounds)                                  │
+│   > default)                                              │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ### Project Structure
@@ -80,45 +103,55 @@ app/src/main/java/com/tinybear/chatyinput/
 │   └── ModePrompts.kt          # Mode templates + Smart/Strict/Location prompts
 │
 ├── ime/                        # Input Method Editor
-│   ├── ChatyInputIME.kt        # IME service (lifecycle, pipeline, VAD)
-│   └── KeyboardView.kt         # Compose keyboard UI
+│   ├── ChatyInputIME.kt        # IME service (lifecycle, pipeline, VAD, pending buffer)
+│   └── KeyboardView.kt         # Compose keyboard UI (mode/smart buttons, inline panels)
 │
 ├── model/                      # Data models
 │   ├── Mode.kt                 # Mode + LocationTrigger + AppModeMapping
-│   ├── ToolModels.kt           # ChatMessage, ToolCall, LLMResponse
+│   ├── ToolModels.kt           # ChatMessage, ToolCall, LLMResponse, ToolSideEffect
 │   ├── ProcessingResult.kt     # LLM response (intent, text, suggestedMode)
 │   ├── VoiceIntent.kt          # content | edit | send | undo
 │   └── HistoryEntry.kt         # Voice input history record
 │
 ├── service/                    # Core services
-│   ├── RecordingPipeline.kt    # STT parallel + LLM queue orchestration
-│   ├── VoiceIntentProcessor.kt # Multi-turn tool use loop
-│   ├── VadService.kt           # Silero VAD v4 (ONNX Runtime)
-│   ├── ModeResolver.kt         # Mode priority resolution + context building
-│   ├── ModeManager.kt          # Mode CRUD + app mappings
-│   ├── LocationProvider.kt     # FusedLocationProvider + Haversine distance
+│   ├── RecordingPipeline.kt    # STT parallel + LLM queue + Smart/Strict + GPS language
+│   ├── VoiceIntentProcessor.kt # Multi-turn tool use loop (max rounds configurable)
+│   ├── VadService.kt           # Silero VAD v4 (ONNX Runtime) + flush on stop
+│   ├── ModeResolver.kt         # Mode priority: manual > app-forced > LLM > app > default
+│   ├── ModeManager.kt          # Mode CRUD + app mappings (with format migration)
+│   ├── LocationProvider.kt     # FusedLocationProvider + caching + Haversine distance
 │   ├── ToolRegistry.kt         # Extensible tool definitions
-│   ├── ToolExecutor.kt         # Tool dispatch + side effects
-│   ├── LLMProvider.kt          # Interface (complete + completeWithTools)
-│   ├── OpenAIProvider.kt       # OpenAI + function calling
-│   ├── ClaudeProvider.kt       # Claude + tool use
+│   ├── ToolExecutor.kt         # Tool dispatch + side effects (ModeSwitched)
+│   ├── LLMProvider.kt          # Interface: complete() + completeWithTools()
+│   ├── OpenAIProvider.kt       # OpenAI chat + function calling
+│   ├── ClaudeProvider.kt       # Claude messages + tool use
 │   ├── STTProvider.kt          # STT interface
-│   ├── WhisperAPIProvider.kt   # Whisper API (+ anti-hallucination)
+│   ├── WhisperAPIProvider.kt   # Whisper API + 5-layer anti-hallucination
 │   ├── AudioCaptureService.kt  # MediaRecorder + PCM→M4A conversion
 │   ├── HistoryManager.kt       # JSON history persistence
 │   └── tools/
 │       └── SwitchModeTool.kt   # switch_mode tool definition
 │
 └── ui/                         # Jetpack Compose screens
-    ├── MainActivity.kt         # 5-tab navigation + back handling
-    ├── VoiceScreen.kt          # Test area with Load to Buffer
-    ├── HistoryScreen.kt        # Voice input history
+    ├── MainActivity.kt         # 5-tab navigation (Voice/History/Dictionary/Modes/Settings)
+    ├── VoiceScreen.kt          # Test area + Load to Buffer + Copy + Clear
+    ├── HistoryScreen.kt        # Voice input history with audio playback
     ├── DictionaryScreen.kt     # Custom words management
-    ├── ModeListScreen.kt       # Modes tab (toggles, selection, location)
-    ├── ModeEditorScreen.kt     # Mode editor (triggers, apps, locations)
-    ├── SettingsScreen.kt       # All configuration
+    ├── ModeListScreen.kt       # Modes tab (auto-switch, location, language toggles)
+    ├── ModeEditorScreen.kt     # Mode editor (triggers, apps picker, locations, force lock)
+    ├── SettingsScreen.kt       # STT/LLM config, prompts, tool rounds, history
     └── Theme.kt                # Material3 theme
 ```
+
+---
+
+## How It Works
+
+1. **Speak** — Hold PTT, tap toggle, or use hands-free VAD
+2. **Process** — STT transcribes in parallel, LLM classifies intent via tool-use loop
+3. **AI Decides** — Smart mode: auto-edits, calculates, fills info. Strict mode: waits for commands
+4. **Mode Context** — AI sees current app + GPS location + trigger conditions, may switch mode
+5. **Send** — Say "send" and text goes directly into the active app
 
 ---
 
@@ -158,7 +191,8 @@ APK output: `app/build/outputs/apk/debug/app-debug.apk`
 
 | Component | Technology |
 |-----------|-----------|
-| UI | Kotlin / Jetpack Compose |
+| Language | Kotlin |
+| UI | Jetpack Compose + Material3 |
 | Networking | OkHttp 4.12 |
 | Serialization | kotlinx.serialization 1.7 |
 | Voice Detection | ONNX Runtime 1.17 + Silero VAD v4 |
