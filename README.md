@@ -179,4 +179,5 @@ See [chatyinput.com/#roadmap](https://chatyinput.com/#roadmap)
 
 - **Website:** [chatyinput.com](https://chatyinput.com)
 - **GitHub:** [ChatyInput-org](https://github.com/ChatyInput-org)
+- **Contact:** [thinkroid.com/contact](https://www.thinkroid.com/contact/)
 - **Built by:** [Thinkroid](https://thinkroid.com) in Vancouver
